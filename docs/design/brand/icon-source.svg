@@ -5,8 +5,10 @@
       .play { fill: #FFFFFF; stroke: #FFFFFF; stroke-width: 56; stroke-linejoin: round; }
     </style>
   </defs>
-  <!-- Modern TV screen frame with safe rounded corners for Windows masks -->
+  <!-- Frame Play primary mark.
+       Frame occupies 75% of the canvas (768×768 px) to stay inside Windows rounded masks.
+       Play glyph is enlarged to ~57% of the frame height and shifted +22 px to the right
+       so the triangle centroid lands on the optical centre. -->
   <rect class="frame" x="128" y="128" width="768" height="768" rx="160" ry="160"/>
-  <!-- Rounded play triangle, centered and scaled for 16-256 px legibility -->
-  <path class="play" d="M392 360 L632 512 L392 664 Z"/>
+  <path class="play" d="M414 320 L714 512 L414 704 Z"/>
 </svg>

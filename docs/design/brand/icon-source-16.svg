@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16">
+  <defs>
+    <style>
+      .frame { fill: #0066FF; }
+      .play { fill: #FFFFFF; stroke: #FFFFFF; stroke-width: 2; stroke-linejoin: round; }
+    </style>
+  </defs>
+  <!-- Pixel-grid-aligned 16×16 variant: thicker stroke keeps the rounded play legible. -->
+  <rect class="frame" x="2" y="2" width="12" height="12" rx="2.5" ry="2.5"/>
+  <path class="play" d="M6 4 L11 8 L6 12 Z"/>
+</svg>

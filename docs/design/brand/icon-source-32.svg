@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <defs>
+    <style>
+      .frame { fill: #0066FF; }
+      .play { fill: #FFFFFF; stroke: #FFFFFF; stroke-width: 3; stroke-linejoin: round; }
+    </style>
+  </defs>
+  <!-- Pixel-grid-aligned 32×32 variant: stroke thickened to preserve rounded joints. -->
+  <rect class="frame" x="4" y="4" width="24" height="24" rx="5" ry="5"/>
+  <path class="play" d="M13 8 L23 16 L13 24 Z"/>
+</svg>
