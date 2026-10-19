@@ -142,6 +142,7 @@
         "@angular/platform-browser": "22.2.2",
         "@angular/platform-browser-dynamic": "22.2.2",
         "@angular/router": "22.2.2",
+        "@napi-rs/keyring": "2.1.1",
         "@ngrx/effects": "22.0.1",
         "@ngrx/entity": "22.0.1",
         "@ngrx/router-store": "22.0.1",
