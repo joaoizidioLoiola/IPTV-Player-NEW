@@ -53,7 +53,7 @@ describe('path-utils', () => {
         expect(getIptvnatorDataRoot()).toBe(dataDir);
         expect(existsSync(dataDir)).toBe(true);
         expect(getIptvnatorDatabasePath()).toBe(
-            join(dataDir, 'databases', 'iptvnator.db')
+            join(dataDir, 'databases', 'iptv-player-new.db')
         );
     });
 
@@ -69,7 +69,7 @@ describe('path-utils', () => {
         process.env[IPTVNATOR_DATA_DIR_ENV] = '   ';
 
         expect(getIptvnatorDataRoot()).toBe(
-            join(tempRoot, 'home', '.iptvnator')
+            join(tempRoot, 'home', '.iptv-player-new')
         );
     });
 
@@ -81,10 +81,10 @@ describe('path-utils', () => {
         expect(existsSync(e2eDataDir)).toBe(true);
     });
 
-    it('falls back to ~/.iptvnator when the env override is blank', () => {
+    it('falls back to ~/.iptv-player-new when the env override is blank', () => {
         process.env[IPTVNATOR_E2E_DATA_DIR_ENV] = '   ';
 
-        const expectedRoot = join(tempRoot, 'home', '.iptvnator');
+        const expectedRoot = join(tempRoot, 'home', '.iptv-player-new');
 
         expect(getIptvnatorDataRoot()).toBe(expectedRoot);
         expect(existsSync(expectedRoot)).toBe(true);
@@ -99,7 +99,7 @@ describe('path-utils', () => {
         expect(databaseDirectory).toBe(join(e2eDataDir, 'databases'));
         expect(existsSync(databaseDirectory)).toBe(true);
         expect(getIptvnatorDatabasePath()).toBe(
-            join(e2eDataDir, 'databases', 'iptvnator.db')
+            join(e2eDataDir, 'databases', 'iptv-player-new.db')
         );
     });
 

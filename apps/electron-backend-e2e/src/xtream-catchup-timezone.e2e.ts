@@ -439,7 +439,7 @@ test('@downloads @epg @xtream @electron downloads a completed archive into the l
             },
             {
                 dependency: join(workspaceRoot, 'node_modules/better-sqlite3'),
-                file: join(dataDir, 'databases/iptvnator.db'),
+                file: join(dataDir, 'databases/iptv-player-new.db'),
                 id: row.id,
                 mediaPath: row.filePath,
             }
@@ -463,7 +463,7 @@ test('@downloads @epg @xtream @electron downloads a completed archive into the l
             },
             {
                 dependency: join(workspaceRoot, 'node_modules/better-sqlite3'),
-                file: join(dataDir, 'databases/iptvnator.db'),
+                file: join(dataDir, 'databases/iptv-player-new.db'),
                 id: row.id,
             }
         );
@@ -588,7 +588,7 @@ test('@downloads @epg @xtream @electron downloads a completed archive into the l
             },
             {
                 dependency: join(workspaceRoot, 'node_modules/better-sqlite3'),
-                file: join(dataDir, 'databases/iptvnator.db'),
+                file: join(dataDir, 'databases/iptv-player-new.db'),
                 id: row.id,
             }
         );
@@ -710,7 +710,7 @@ test('@downloads @epg @xtream @electron downloads a completed archive into the l
             },
             {
                 dependency: join(workspaceRoot, 'node_modules/better-sqlite3'),
-                file: join(dataDir, 'databases/iptvnator.db'),
+                file: join(dataDir, 'databases/iptv-player-new.db'),
                 id: row.id,
             }
         );

@@ -101,7 +101,7 @@ export async function readXtreamCatalogDatabaseSnapshot(
                 databasePath: join(
                     options.dataDirectory,
                     'databases',
-                    'iptvnator.db'
+                    'iptv-player-new.db'
                 ),
                 queries,
                 requireFromPath: options.requireFromPath,

@@ -84,7 +84,9 @@ test('the chain names the latest completion at the deepest level', () => {
 });
 
 test('the J1 startup shape measures the recovery chain', () => {
-    // Shape of the 2026-09-30 macOS trace on master.
+    // Shape of the 2026-09-30 macOS trace on master, minus the upstream
+    // legacy-profile recovery call: this fork never imports another app's
+    // profile, so the startup journey is one serial level shorter.
     const result = computeJourneyIpcSerialDepth(
         timeline(
             '+announcePlaylistOpenListener',
@@ -97,8 +99,6 @@ test('the J1 startup shape measures the recovery chain', () => {
             '-dbGetAppState',
             '-dbGetAppState',
             '-dbGetAppState',
-            '+dbRecoverLegacyPlaylists',
-            '-dbRecoverLegacyPlaylists',
             '+dbGetAppState',
             '-dbGetAppState',
             '+dbGetAppPlaylistMetas',
@@ -111,12 +111,11 @@ test('the J1 startup shape measures the recovery chain', () => {
             '+dbGetRecentlyViewed'
         )
     );
-    assert.equal(result.depth, 6);
-    assert.equal(result.depthLowerBound, 6);
+    assert.equal(result.depth, 5);
+    assert.equal(result.depthLowerBound, 5);
     assert.equal(result.inFlightAtEnd, 2);
     assert.deepEqual(result.chain, [
         'dbGetAppState',
-        'dbRecoverLegacyPlaylists',
         'dbGetAppState',
         'dbGetAppPlaylistMetas',
         'reconcileEpgSources',

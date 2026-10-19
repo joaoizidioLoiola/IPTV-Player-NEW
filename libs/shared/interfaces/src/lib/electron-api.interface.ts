@@ -1029,7 +1029,6 @@ export interface ElectronBridgeApi {
     dbMigrateAppPlaylists: (
         playlists: Playlist[]
     ) => Promise<{ success: boolean; count: number }>;
-    dbRecoverLegacyPlaylists: () => Promise<void>;
     dbUpsertAppPlaylists: (
         playlists: Playlist[]
     ) => Promise<ElectronBridgeCountResult>;

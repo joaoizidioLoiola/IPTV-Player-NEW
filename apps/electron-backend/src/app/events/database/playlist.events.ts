@@ -4,14 +4,12 @@
  */
 
 import { ipcMain } from 'electron';
-import { recoverLegacyProfile } from '../../services/legacy-profile-recovery';
 import { databaseWorkerClient } from '../../services/database-worker-client';
 import {
     handleWorkerRequest,
     requestWorkerWithEvents,
 } from './worker-events.utils';
 
-ipcMain.handle('DB_RECOVER_LEGACY_PLAYLISTS', () => recoverLegacyProfile());
 handleWorkerRequest(
     'DB_MIGRATE_APP_PLAYLISTS',
     (playlists: Record<string, unknown>[]) => ({ playlists })

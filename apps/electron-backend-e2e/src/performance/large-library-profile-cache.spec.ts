@@ -162,7 +162,7 @@ test('a cached profile needs its manifest and a database of the recorded size', 
     withTempDir((directory) => {
         assert.equal(readLargeLibraryProfileManifest(directory), null);
         mkdirSync(join(directory, 'databases'));
-        writeFileSync(join(directory, 'databases/iptvnator.db'), 'abcde');
+        writeFileSync(join(directory, 'databases/iptv-player-new.db'), 'abcde');
         assert.equal(readLargeLibraryProfileManifest(directory), null);
         writeFileSync(
             join(directory, 'manifest.json'),

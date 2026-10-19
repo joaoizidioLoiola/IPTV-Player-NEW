@@ -611,7 +611,6 @@ describe('PlaylistsService', () => {
                 }),
                 dbUpsertAppPlaylist: upsert,
                 dbUpsertAppPlaylists: jest.fn(),
-                dbRecoverLegacyPlaylists: jest.fn(),
             };
             testWindow.electron = undefined;
             const service = createService();
@@ -640,7 +639,6 @@ describe('PlaylistsService', () => {
                 '1'
             );
             // The desktop-only steps stay with the desktop.
-            expect(server.dbRecoverLegacyPlaylists).not.toHaveBeenCalled();
         });
 
         it('stay unflagged for the next start after a conflict', async () => {

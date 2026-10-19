@@ -609,7 +609,7 @@ SQLite bridge, and feature visibility follows `RuntimeCapabilitiesService`.
 The same workspace route tree is used in both runtimes.
 
 Desktop relational data uses the canonical schema/connection in
-`libs/shared/database`; the SQLite path is `~/.iptvnator/databases/iptvnator.db`.
+`libs/shared/database`; the SQLite path is `~/.iptv-player-new/databases/iptv-player-new.db`.
 Desktop Chromium settings/storage still exist alongside SQLite. PWA data uses
 browser IndexedDB (with browser quotas); its structure is not the SQL schema.
 Browser-selected file uploads remain possible even though native filesystem

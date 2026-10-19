@@ -41,7 +41,7 @@ import {
 } from './app/services/playlist-open-request';
 import { EMBEDDED_MPV_FRAME_COPY, store } from './app/services/store.service';
 
-app.setName('iptvnator');
+app.setName('iptv-player-new');
 
 traceStartupPhase('compile-cache', () => readCompileCacheOutcome());
 // Before anything can open the shared database connection.
@@ -53,7 +53,7 @@ countMainProcessSqlStatements(
 // Before the first portal, playlist or update request leaves this process.
 applyElectronNetworkDefaults((line) => {
     if (isStartupTraceEnabled()) {
-        console.log(`[IPTVnator Trace][startup] ${line}`);
+        console.log(`[IPTV Player NEW Trace][startup] ${line}`);
     }
 });
 
@@ -176,8 +176,14 @@ export default class Main {
             .then(() => deferred.trigger())
             .catch(() => undefined);
         await loadingMainWindow;
-        const { module, result } = await deferred.trigger();
-        void result.appUpdateService.checkForUpdatesOnStartup();
+        const { module } = await deferred.trigger();
+
+        // No startup update check: this fork has no release feed yet
+        // (no electron-builder `publish` endpoint), so nothing may consult
+        // upstream release endpoints. Reintroduce
+        // `result.appUpdateService.checkForUpdatesOnStartup()` here once a
+        // release destination is chosen and APP_UPDATE_FEED_CONFIGURED turns
+        // true (see libs/shared/interfaces app-update-channel.util.ts).
 
         await module.finishStartupAfterFirstLoad();
 

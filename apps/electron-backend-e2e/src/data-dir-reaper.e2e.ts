@@ -44,7 +44,7 @@ function makeDataDir(
 ): string {
     const dir = join(root, `${dataDirPrefix}${name}`);
     mkdirSync(join(dir, 'databases'), { recursive: true });
-    writeFileSync(join(dir, 'databases', 'iptvnator.db'), 'db');
+    writeFileSync(join(dir, 'databases', 'iptv-player-new.db'), 'db');
     if (options.pid !== undefined) {
         writeFileSync(join(dir, dataDirOwnerMarker), String(options.pid));
     }

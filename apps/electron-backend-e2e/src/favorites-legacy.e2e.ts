@@ -232,7 +232,7 @@ test('@critical @persistence @xtream @electron upgrades orphaned legacy favorite
         ),
         'utf8'
     );
-    const databaseFile = join(dataDir, 'databases/iptvnator.db');
+    const databaseFile = join(dataDir, 'databases/iptv-player-new.db');
     const dependency = join(workspaceRoot, 'node_modules/better-sqlite3');
     const wrapper = join(dataDir, 'legacy-favorites-startup.cjs');
     const seed = `

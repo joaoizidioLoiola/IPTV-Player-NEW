@@ -18,6 +18,15 @@ function ensureDirectory(dirPath: string): string {
     return dirPath;
 }
 
+/**
+ * Product-specific data root. Deliberately NOT the upstream `~/.iptvnator`:
+ * this fork never reads, imports or migrates another app's profile.
+ */
+const PRODUCT_DATA_DIR = '.iptv-player-new';
+
+/** Versioned database file name, owned by this product. */
+const PRODUCT_DATABASE_FILE = 'iptv-player-new.db';
+
 export function getIptvnatorDataRoot(): string {
     const e2eDataDir = process.env[IPTVNATOR_E2E_DATA_DIR_ENV]?.trim();
 
@@ -31,7 +40,7 @@ export function getIptvnatorDataRoot(): string {
         return ensureDirectory(dataDir);
     }
 
-    return ensureDirectory(join(homedir(), '.iptvnator'));
+    return ensureDirectory(join(homedir(), PRODUCT_DATA_DIR));
 }
 
 export function getIptvnatorDatabaseDirectory(): string {
@@ -39,7 +48,7 @@ export function getIptvnatorDatabaseDirectory(): string {
 }
 
 export function getIptvnatorDatabasePath(): string {
-    return join(getIptvnatorDatabaseDirectory(), 'iptvnator.db');
+    return join(getIptvnatorDatabaseDirectory(), PRODUCT_DATABASE_FILE);
 }
 
 export function getElectronUserDataPath(): string | null {

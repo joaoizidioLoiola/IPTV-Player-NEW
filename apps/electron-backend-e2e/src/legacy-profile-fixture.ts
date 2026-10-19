@@ -215,7 +215,7 @@ app.whenReady().then(() => new BrowserWindow({
                     db.close();
                 },
                 {
-                    path: join(dataDir, 'databases', 'iptvnator.db'),
+                    path: join(dataDir, 'databases', 'iptv-player-new.db'),
                     dependency: join(
                         workspaceRoot,
                         'node_modules/better-sqlite3'

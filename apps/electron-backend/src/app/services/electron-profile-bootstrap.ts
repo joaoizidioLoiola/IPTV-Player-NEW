@@ -1,11 +1,8 @@
 import { app } from 'electron';
 import { getElectronUserDataPath } from '@iptvnator/shared/database';
-import { selectLegacyProfile } from './legacy-profile';
 
+// Profile isolation: this product only ever uses its own Chromium profile.
+// The only permitted override is the E2E data dir; upstream IPTVnator's
+// `electron-backend` profile is never selected, imported or copied.
 const override = getElectronUserDataPath();
-const current = override ?? app.getPath('userData');
-const legacy = selectLegacyProfile(
-    process.env.IPTVNATOR_E2E_DATA_DIR?.trim() || app.getPath('appData'),
-    current
-);
-if (legacy || override) app.setPath('userData', legacy ?? current);
+if (override) app.setPath('userData', override);

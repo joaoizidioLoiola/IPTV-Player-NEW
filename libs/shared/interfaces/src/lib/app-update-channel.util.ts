@@ -23,6 +23,17 @@ export const APP_UPDATE_CHANNELS: readonly AppUpdateChannel[] = [
 export const DEFAULT_APP_UPDATE_CHANNEL: AppUpdateChannel = 'stable';
 
 /**
+ * Whether this build has a release feed to consult. This fork has no release
+ * destination yet: electron-builder ships no `publish` endpoint, so nothing
+ * may query upstream release repositories or offer downloads. Every network
+ * update path (startup check, manual check, GitHub catalog, self-update)
+ * stays off while this is false, and the About UI reports updates as
+ * unavailable instead of promising one. Flip it to `true` in the same
+ * change that adds the `publish` block to electron-builder.json.
+ */
+export const APP_UPDATE_FEED_CONFIGURED = false;
+
+/**
  * Prerelease identifier every nightly version carries
  * (`0.23.1-nightly.20260915.1234`). The nightly build sets the same name as
  * electron-builder's publish channel, which names the updater metadata

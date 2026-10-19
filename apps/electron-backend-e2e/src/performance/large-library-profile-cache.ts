@@ -47,7 +47,7 @@ const GENERATION_TIMEOUT_MS = 30 * 60 * 1_000;
 export interface LargeLibraryProfile {
     readonly cached: boolean;
     readonly cacheKey: string;
-    /** The data directory holding `databases/iptvnator.db`; copy, never launch on it. */
+    /** The data directory holding `databases/iptv-player-new.db`; copy, never launch on it. */
     readonly directory: string;
     readonly manifest: LargeLibraryProfileManifest;
 }
@@ -152,7 +152,7 @@ export function readLargeLibraryProfileManifest(
     directory: string
 ): LargeLibraryProfileManifest | null {
     const manifestPath = join(directory, LARGE_LIBRARY_MANIFEST_FILE_NAME);
-    const databasePath = join(directory, 'databases', 'iptvnator.db');
+    const databasePath = join(directory, 'databases', 'iptv-player-new.db');
     if (!existsSync(manifestPath) || !existsSync(databasePath)) {
         return null;
     }

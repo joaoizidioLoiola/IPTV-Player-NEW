@@ -24,7 +24,6 @@ export type PlaylistDocumentStore = Pick<
             | 'dbGetAppPlaylistFavoriteChannels'
             | 'dbGetAppPlaylistMetas'
             | 'dbMigrateAppPlaylists'
-            | 'dbRecoverLegacyPlaylists'
         >
     >;
 

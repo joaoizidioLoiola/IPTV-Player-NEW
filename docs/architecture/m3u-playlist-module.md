@@ -27,7 +27,7 @@ The published v0.19 Linux DEB's `app.asar/package.json` names the app
 `electron-backend`. Later packages set `productName: IPTVnator`. Electron
 resolves different `userData` directories from those identities; a later
 `app.setName('iptvnator')` does not reset the cached path. The shared
-`~/.iptvnator/databases/iptvnator.db` is independent of that path, so cached
+`~/.iptv-player-new/databases/iptv-player-new.db` is independent of that path, so cached
 Xtream sources can remain visible while the complete IndexedDB list is in
 the older profile. Linux usually places these profiles below `~/.config/`.
 Snap/Flatpak confinement and a changed installation type can give them

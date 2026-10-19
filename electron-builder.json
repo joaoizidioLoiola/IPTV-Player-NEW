@@ -1,6 +1,6 @@
 {
-    "appId": "com.fourgray.iptvnator",
-    "productName": "IPTVnator",
+    "appId": "com.iptvplayernew.desktop",
+    "productName": "IPTV Player NEW",
     "artifactName": "${name}-${version}-${os}-${arch}.${ext}",
     "fileAssociations": [
         {
@@ -16,13 +16,6 @@
             "description": "IPTV playlist",
             "mimeType": "application/vnd.apple.mpegurl",
             "role": "Viewer"
-        }
-    ],
-    "publish": [
-        {
-            "provider": "github",
-            "owner": "4gray",
-            "repo": "iptvnator"
         }
     ],
     "directories": {
@@ -52,9 +45,9 @@
         "**/embedded-mpv-runtime.json"
     ],
     "extraMetadata": {
-        "name": "iptvnator",
-        "productName": "IPTVnator",
-        "desktopName": "iptvnator",
+        "name": "iptv-player-new",
+        "productName": "IPTV Player NEW",
+        "desktopName": "iptv-player-new",
         "main": "electron-backend/main.js"
     },
     "extraResources": ["dist/apps/electron-backend/workers"],
@@ -185,7 +178,7 @@
         "target": [
             {
                 "target": "nsis",
-                "arch": ["x64", "ia32"]
+                "arch": ["x64"]
             }
         ],
         "artifactName": "${name}-${version}-windows-${arch}-setup.${ext}",

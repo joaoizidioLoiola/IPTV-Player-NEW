@@ -93,19 +93,17 @@ describe('database worker IPC contract', () => {
     it('registers an IPC handler for every worker operation', () => {
         const registeredDbChannels = [...mockRegisteredHandlers.keys()]
             .filter(
-                (channel) =>
-                    ![
-                        'DB_CANCEL_OPERATION',
-                        'DB_RECOVER_LEGACY_PLAYLISTS',
-                    ].includes(channel)
+                (channel) => !['DB_CANCEL_OPERATION'].includes(channel)
             )
             .sort();
 
         expect(registeredDbChannels).toEqual([...DB_WORKER_OPERATIONS].sort());
         expect(mockRegisteredHandlers.has('DB_CANCEL_OPERATION')).toBe(true);
-        expect(mockRegisteredHandlers.has('DB_RECOVER_LEGACY_PLAYLISTS')).toBe(
-            true
-        );
+        // The upstream legacy-profile recovery is gone from this fork: no
+        // handler, no renderer bridge method, no IndexedDB copy.
+        expect(
+            mockRegisteredHandlers.has('DB_RECOVER_LEGACY_PLAYLISTS')
+        ).toBe(false);
     });
 
     it.each(workerIpcContractCases)(

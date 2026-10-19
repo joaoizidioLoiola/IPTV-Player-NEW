@@ -143,6 +143,8 @@ function createService(
         cancelPreparedQuit?: () => void;
         channel?: AppUpdateChannel;
         appVersion?: string;
+        /** Defaults to true: these specs exercise the configured-feed era. */
+        feedConfigured?: boolean;
     } = {}
 ) {
     const updater = new FakeUpdater();
@@ -154,6 +156,7 @@ function createService(
         },
         appVersion: overrides.appVersion,
         channel: overrides.channel,
+        feedConfigured: overrides.feedConfigured ?? true,
         getMainWindow: () => win,
         cancelPreparedQuit: overrides.cancelPreparedQuit,
         platform: overrides.platform ?? 'darwin',
@@ -189,6 +192,7 @@ describe('AppUpdateService', () => {
                 getVersion: () => '0.0',
                 isPackaged: false,
             },
+            feedConfigured: true,
             getMainWindow: () => createWindow(),
             updater: updaterFactory,
         });
@@ -215,6 +219,7 @@ describe('AppUpdateService', () => {
                 isPackaged: false,
             },
             appVersion: '0.22.0',
+            feedConfigured: true,
             getMainWindow: () => createWindow(),
             updater: jest.fn(() => new FakeUpdater()),
         });
@@ -230,6 +235,63 @@ describe('AppUpdateService', () => {
         });
     });
 
+    it('stays entirely offline while no release feed is configured', async () => {
+        // This fork ships without a `publish` endpoint: no updater adapter,
+        // no GitHub catalog request, no startup or manual check.
+        const fetcher = jest.fn();
+        const updaterFactory = jest.fn(() => new FakeUpdater());
+        const service = new AppUpdateService({
+            app: {
+                getVersion: () => '0.22.0',
+                isPackaged: true,
+            },
+            getMainWindow: () => createWindow(),
+            platform: 'win32',
+            processEnv: {},
+            releaseFetcher: fetcher,
+            updater: updaterFactory,
+        });
+
+        expect(service.getStatus()).toEqual({
+            currentVersion: '0.22.0',
+            manualDownloadUrl: '',
+            status: ELECTRON_BRIDGE_APP_UPDATE_STATUSES.Unsupported,
+            supportedSelfUpdate: false,
+            channel: 'stable',
+            installedChannel: 'stable',
+        });
+
+        await service.checkForUpdates();
+        await service.checkForUpdatesOnStartup();
+
+        expect(updaterFactory).not.toHaveBeenCalled();
+        expect(fetcher).not.toHaveBeenCalled();
+        expect(service.getStatus().status).toBe(
+            ELECTRON_BRIDGE_APP_UPDATE_STATUSES.Unsupported
+        );
+    });
+
+    it('offers no manual download URL and no release notes without a feed', async () => {
+        const fetcher = jest.fn();
+        const service = new AppUpdateService({
+            app: {
+                getVersion: () => '0.22.0',
+                isPackaged: true,
+            },
+            getMainWindow: () => createWindow(),
+            platform: 'win32',
+            processEnv: {},
+            releaseFetcher: fetcher,
+            updater: new FakeUpdater(),
+        });
+
+        await expect(
+            service.getReleaseNotes({ version: '0.23.0' })
+        ).rejects.toThrow('configured update feed');
+        expect(fetcher).not.toHaveBeenCalled();
+        expect(service.getStatus().manualDownloadUrl).toBe('');
+    });
+
     it('checks GitHub releases without resolving the updater on unsupported packaged Linux builds', async () => {
         const fetcher = createReleaseFetcher();
         const updaterFactory = jest.fn(() => new FakeUpdater());
@@ -238,6 +300,7 @@ describe('AppUpdateService', () => {
                 getVersion: () => '0.22.0',
                 isPackaged: true,
             },
+            feedConfigured: true,
             getMainWindow: () => createWindow(),
             platform: 'linux',
             processEnv: {},

@@ -144,7 +144,6 @@ export class PlaylistsService {
             this.electronMigrationPromise = (async () => {
                 if (this.usesElectronStorage) {
                     await this.migrateIndexedDbPlaylistsToSqlite();
-                    await this.documentStore?.dbRecoverLegacyPlaylists?.();
                 }
                 // Server rows too, once per server: a desktop database
                 // copied to the server can predate this migration.

@@ -32,7 +32,6 @@ describe('PlaylistsService inventory reads', () => {
                 async (_key: string): Promise<string | null> => '1'
             ),
             dbSetAppState: jest.fn(),
-            dbRecoverLegacyPlaylists: jest.fn(async () => undefined),
             dbGetAppPlaylists: jest.fn(async () => []),
             dbGetAppPlaylistMetas: jest.fn(() => {
                 const read = deferred<Playlist[]>();

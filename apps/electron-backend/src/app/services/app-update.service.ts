@@ -1,4 +1,5 @@
 import {
+    APP_UPDATE_FEED_CONFIGURED,
     APP_UPDATE_STATUS_CHANGED,
     AppUpdateChannel,
     appUpdateReleasesPageUrl,
@@ -91,6 +92,13 @@ export interface AppUpdateServiceOptions {
     /** Persisted update channel at startup; `setChannel` follows later saves. */
     channel?: AppUpdateChannel;
     /**
+     * Whether a release feed exists for this build. Defaults to
+     * `APP_UPDATE_FEED_CONFIGURED`; while false, every check (startup,
+     * manual, release notes) answers "unsupported" without touching the
+     * network and no updater adapter is resolved.
+     */
+    feedConfigured?: boolean;
+    /**
      * Runs right before `quitAndInstall()`. Lets the unsaved-settings close
      * guard stand down for the updater-driven window close, which on macOS
      * happens before `before-quit` and would otherwise be intercepted as a
@@ -166,6 +174,7 @@ function toReleaseInfo(
 export class AppUpdateService {
     private readonly currentVersion: string;
     private readonly isPackaged: boolean;
+    private readonly feedConfigured: boolean;
     private readonly supportedSelfUpdate: boolean;
     private readonly catalogs: AppUpdateReleaseCatalogs;
     private readonly updater: AppUpdaterAdapter | null = null;
@@ -183,11 +192,15 @@ export class AppUpdateService {
         );
         this.isPackaged = options.app.isPackaged;
         this.channel = options.channel ?? DEFAULT_APP_UPDATE_CHANNEL;
-        this.supportedSelfUpdate = isSelfUpdateSupported(
-            options.app.isPackaged,
-            options.platform ?? process.platform,
-            options.processEnv ?? process.env
-        );
+        this.feedConfigured =
+            options.feedConfigured ?? APP_UPDATE_FEED_CONFIGURED;
+        this.supportedSelfUpdate =
+            this.feedConfigured &&
+            isSelfUpdateSupported(
+                options.app.isPackaged,
+                options.platform ?? process.platform,
+                options.processEnv ?? process.env
+            );
         const releaseFetcher: ReleaseFetcher =
             options.releaseFetcher ??
             ((url, init) => fetch(url, init) as Promise<ReleaseFetchResponse>);
@@ -197,7 +210,9 @@ export class AppUpdateService {
         );
         this.status = {
             currentVersion: this.currentVersion,
-            manualDownloadUrl: appUpdateReleasesPageUrl(this.channel),
+            manualDownloadUrl: this.feedConfigured
+                ? appUpdateReleasesPageUrl(this.channel)
+                : '',
             status: getInitialStatus(this.supportedSelfUpdate),
             supportedSelfUpdate: this.supportedSelfUpdate,
             channel: this.channel,
@@ -259,7 +274,9 @@ export class AppUpdateService {
     }
 
     private async runCheckForUpdates(): Promise<ElectronBridgeAppUpdateStatus> {
-        if (!this.isPackaged) {
+        // Unpackaged builds and builds without a release feed never touch
+        // the network: no updater, no GitHub catalog, no upstream endpoint.
+        if (!this.isPackaged || !this.feedConfigured) {
             this.setStatus({
                 status: ELECTRON_BRIDGE_APP_UPDATE_STATUSES.Unsupported,
             });
@@ -300,6 +317,14 @@ export class AppUpdateService {
     getReleaseNotes(
         request: ElectronBridgeAppUpdateReleaseNotesRequest = {}
     ): Promise<ElectronBridgeAppUpdateReleaseNotes> {
+        if (!this.feedConfigured) {
+            return Promise.reject(
+                new Error(
+                    'Release notes are not available without a configured update feed'
+                )
+            );
+        }
+
         return this.catalogs.getReleaseNotes(this.channel, request);
     }
 
@@ -485,7 +510,9 @@ export class AppUpdateService {
             ...this.status,
             ...update,
             currentVersion: this.currentVersion,
-            manualDownloadUrl: appUpdateReleasesPageUrl(this.channel),
+            manualDownloadUrl: this.feedConfigured
+                ? appUpdateReleasesPageUrl(this.channel)
+                : '',
             supportedSelfUpdate: this.supportedSelfUpdate,
             channel: this.channel,
             installedChannel: this.status.installedChannel,

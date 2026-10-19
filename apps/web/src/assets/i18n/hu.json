@@ -10,7 +10,7 @@
     "SHOW_LESS": "Kevesebb mutatása",
     "PLAYLISTS": "Lejátszási listák",
     "HOME": {
-        "TITLE": "IPTVnator",
+        "TITLE": "IPTV Player NEW",
         "SUBTITLE": "Válasszon egy meglévő lejátszási listát, vagy adjon hozzá újat",
         "TABS": {
             "RECENTLY_ADDED": "Legutóbb hozzáadott lejátszási listák",
@@ -26,7 +26,7 @@
             "UNTITLED_PLAYLIST": "Névtelen lejátszási lista",
             "PLAYLIST_ACTIONS": "Lejátszási lista műveletei",
             "ADD_FIRST": "Adja hozzá az első lejátszási listát",
-            "WELCOME_TITLE": "Üdvözli Önt az IPTVnator!",
+            "WELCOME_TITLE": "Üdvözli Önt az IPTV Player NEW!",
             "WELCOME_DESCRIPTION": "Első lépésként adja hozzá lejátszási listáját. Kapcsolódjon kedvenc IPTV-szolgáltatásához, és élvezze az élő tévéadásokat, filmeket és sorozatokat.",
             "ADD_YOUR_FIRST": "Első lejátszási lista hozzáadása",
             "FEATURE_M3U": "M3U/M3U8-fájlok",
@@ -192,7 +192,7 @@
             "ERROR_TLS_HOST_UNKNOWN": "Nem sikerült meghatározni a lejátszási lista kiszolgálóját. Próbálja újra kézzel.",
             "TRUST_TLS_HOST": "Kiszolgáló megbízhatónak jelölése",
             "TRUST_TLS_HOST_TITLE": "Megbízik ebben a kiszolgálóban az érvénytelen tanúsítvány ellenére?",
-            "TRUST_TLS_HOST_WARNING": "Csak akkor folytassa, ha megbízik a lejátszási lista kiszolgálójában. Az IPTVnator ennél a kiszolgálónál engedélyezi az érvénytelen TLS-tanúsítványokat, más kiszolgálóknál azonban továbbra is érvényes tanúsítványt követel meg."
+            "TRUST_TLS_HOST_WARNING": "Csak akkor folytassa, ha megbízik a lejátszási lista kiszolgálójában. Az IPTV Player NEW ennél a kiszolgálónál engedélyezi az érvénytelen TLS-tanúsítványokat, más kiszolgálóknál azonban továbbra is érvényes tanúsítványt követel meg."
         },
         "TEXT_IMPORT": {
             "LABEL": "M3U/M3U8-lejátszási lista beillesztése szövegként"
@@ -319,7 +319,7 @@
         "NAV_SERVER": "Szerver",
         "SERVER_DESCRIPTION": "A lejátszási listák, a kedvencek és a megtekintési előrehaladás ezen a szerveren tárolódik, és minden eszköz ugyanazt látja, amely megnyitja.",
         "SERVER_CONNECTION": "Kapcsolat",
-        "SERVER_CONNECTION_DESCRIPTION": "Az IPTVnator szerver, amelyre ez az alkalmazás ment.",
+        "SERVER_CONNECTION_DESCRIPTION": "Az IPTV Player NEW szerver, amelyre ez az alkalmazás ment.",
         "SERVER_CONNECTED": "Csatlakozva",
         "SERVER_OFFLINE": "Nem érhető el",
         "SERVER_STORAGE": "Tárhely",
@@ -386,7 +386,7 @@
         "TMDB_ATTRIBUTION": "Ez a termék a TMDB API-ját használja, de a TMDB nem hagyta jóvá és nem tanúsította.",
         "APP_PREFERENCES": "Az alkalmazás beállításai",
         "HERO_EYEBROW": "Munkaterület-beállítások",
-        "HERO_TITLE": "Az IPTVnator személyre szabása",
+        "HERO_TITLE": "Az IPTV Player NEW személyre szabása",
         "HERO_DESCRIPTION": "A lejátszás, a műsorújság, a távoli hozzáférés és az adatkezelés beállítása egy helyen, a munkaterület jelenlegi megjelenésének megtartásával.",
         "SUBTITLE": "Az alkalmazás beállításainak módosítása",
         "DESCRIPTION": "Módosítsa az alábbi beállításokat, majd erősítse meg a változtatásokat a Változtatások mentése gombbal.",
@@ -444,7 +444,7 @@
         "EPG_SOURCE_FORMATS_EXAMPLES": "Példák:",
         "VIDEO_PLAYER_DESCRIPTION": "Az alapértelmezett videólejátszó kiválasztása",
         "WEB_PLAYER_SHARED_CONTROLS": "Egységes vezérlők a webes lejátszókhoz",
-        "WEB_PLAYER_SHARED_CONTROLS_DESCRIPTION": "Az IPTVnator közös vezérlőinek használata a HTML5-, Video.js- és ArtPlayer-lejátszóban.",
+        "WEB_PLAYER_SHARED_CONTROLS_DESCRIPTION": "Az IPTV Player NEW közös vezérlőinek használata a HTML5-, Video.js- és ArtPlayer-lejátszóban.",
         "PLAYER_AMBIENT_MODE": "Környezeti háttérkitöltés",
         "PLAYER_AMBIENT_MODE_DESCRIPTION": "A lejátszó körüli terület kitöltése elmosott, elsötétített borítóképpel egyszerű fekete sávok helyett.",
         "PLAY_TRAILERS_IN_BACKGROUND": "Előzetesek lejátszása a részletek hátterében",
@@ -475,7 +475,7 @@
         "EPG_VIEW_MODE_TIMELINE": "Idővonal",
         "EPG_VIEW_MODE_LIST": "Lista",
         "STARTUP_BEHAVIOR": "Indításkori nézet",
-        "STARTUP_BEHAVIOR_DESCRIPTION": "Válassza ki, hogy induláskor az első elérhető munkaterület-nézet nyíljon meg, vagy az IPTVnator állítsa vissza a legutóbb használt szakasznézetet. Az első nézet bekapcsolt Vezérlőpult esetén a Vezérlőpult, egyébként a Források.",
+        "STARTUP_BEHAVIOR_DESCRIPTION": "Válassza ki, hogy induláskor az első elérhető munkaterület-nézet nyíljon meg, vagy az IPTV Player NEW állítsa vissza a legutóbb használt szakasznézetet. Az első nézet bekapcsolt Vezérlőpult esetén a Vezérlőpult, egyébként a Források.",
         "STARTUP_BEHAVIOR_FIRST_VIEW": "Első elérhető nézet",
         "STARTUP_BEHAVIOR_RESTORE_LAST_VIEW": "Legutóbbi nézet visszaállítása",
         "STARTUP_WINDOW_MODE": "Ablak indításkor",
@@ -489,7 +489,7 @@
         "STRIP_COUNTRY_PREFIX": "Ország- és csoportelőtagok eltávolítása a csatornanevekből",
         "STRIP_COUNTRY_PREFIX_DESCRIPTION": "Eltávolítja az élő csatornák nevéből az olyan ország- vagy csoportelőtagokat, mint az „US | ” vagy az „UK - ”.",
         "VERSION_DESCRIPTION": "Az alkalmazás jelenlegi verziója",
-        "ABOUT_SUBTITLE": "Verzióadatok, a projekt hivatkozásai és az IPTVnator támogatási lehetőségei.",
+        "ABOUT_SUBTITLE": "Verzióadatok, a projekt hivatkozásai és az IPTV Player NEW támogatási lehetőségei.",
         "EMBEDDED_MPV_NOTICE_TITLE": "Beágyazott MPV-futtatókörnyezet",
         "EMBEDDED_MPV_NOTICE_DESCRIPTION": "Az asztali kiadások tartalmazhatják a kísérleti beágyazott MPV-lejátszóhoz szükséges libmpv- és FFmpeg-könyvtárakat. A felhasználóknak nem kell külön telepíteniük az MPV alkalmazást; szükség esetén továbbra is használható külső MPV- vagy VLC-lejátszó.",
         "COMMUNITY": "Projekt és közösség",
@@ -499,10 +499,10 @@
         "LINK_BLOG_DESCRIPTION": "Kiadási hírek, tippek és projektfrissítések",
         "LINK_TELEGRAM_DESCRIPTION": "Bejelentések, közösség és támogatás",
         "SUPPORT_TITLE": "A projekt támogatása",
-        "SUPPORT_DESCRIPTION": "Az IPTVnator ingyenes és nyílt forráskódú alkalmazás, amelynek fejlesztése is nyilvánosan zajlik. Ha a mindennapjai részévé vált, egy kisebb hozzájárulás is segít életben tartani a projektet és alakítani a jövőjét – köszönjük.",
+        "SUPPORT_DESCRIPTION": "Az IPTV Player NEW ingyenes és nyílt forráskódú alkalmazás, amelynek fejlesztése is nyilvánosan zajlik. Ha a mindennapjai részévé vált, egy kisebb hozzájárulás is segít életben tartani a projektet és alakítani a jövőjét – köszönjük.",
         "SUPPORT_SPONSORS_HINT": "Rendszeres vagy egyszeri támogatás",
         "SUPPORT_KOFI_HINT": "Hívjon meg egy kávéra",
-        "EPG_NOTE": "Az EPG jelenleg csak az IPTVnator Electron-alapú változatában érhető el.",
+        "EPG_NOTE": "Az EPG jelenleg csak az IPTV Player NEW Electron-alapú változatában érhető el.",
         "EPG_NOTE_URL_TEXT": "Itt ellenőrizheti",
         "IMPORT_EXPORT_DATA": "Lejátszási listák biztonsági mentéseinek importálása és exportálása",
         "IMPORT_EXPORT_DATA_DESCRIPTION": "Lejátszási lista biztonsági mentéseinek exportálása vagy visszaállítása, beleértve az M3U-pillanatképeket, az Xtream/Stalker-kapcsolati metaadatokat, a felhasználói állapotot és az EPG-források URL-címeit.",
@@ -532,10 +532,10 @@
         "PLAYLISTS_REMOVED": "Eltávolítottuk az összes lejátszási listát és kapcsolódó adatot.",
         "MPV_PLAYER_PATH_LABEL": "MPV elérési útvonala",
         "MPV_PLAYER_PATH_DESCRIPTION": "Adja meg az MPV elérési útját. macOS rendszeren használható az MPV alkalmazáscsomag, például /Applications/mpv.app, vagy a futtatható fájl elérési útja.",
-        "MPV_COMPATIBLE_PLAYER_TIP": "macOS rendszeren az IINA MPV-kompatibilis lejátszóként indítható, de a futtatható fájl elérési útját adja meg, például /Applications/IINA.app/Contents/MacOS/iina-cli vagy /Applications/IINA.app/Contents/MacOS/IINA. Az IPTVnator vezérlőfunkciói, a lejátszási pozíció lekérdezése és a példány újrafelhasználása csak MPV IPC használatakor garantált.",
+        "MPV_COMPATIBLE_PLAYER_TIP": "macOS rendszeren az IINA MPV-kompatibilis lejátszóként indítható, de a futtatható fájl elérési útját adja meg, például /Applications/IINA.app/Contents/MacOS/iina-cli vagy /Applications/IINA.app/Contents/MacOS/IINA. Az IPTV Player NEW vezérlőfunkciói, a lejátszási pozíció lekérdezése és a példány újrafelhasználása csak MPV IPC használatakor garantált.",
         "MPV_PLAYER_PATH": "MPV-lejátszó elérési útvonala",
         "MPV_PLAYER_ARGUMENTS_LABEL": "MPV parancssori argumentumai",
-        "MPV_PLAYER_ARGUMENTS_DESCRIPTION": "Az IPTVnator új külső lejátszófolyamat indításakor ezeket a nem kötelező argumentumokat adja át az MPV-nek.",
+        "MPV_PLAYER_ARGUMENTS_DESCRIPTION": "Az IPTV Player NEW új külső lejátszófolyamat indításakor ezeket a nem kötelező argumentumokat adja át az MPV-nek.",
         "MPV_PLAYER_ARGUMENTS": "MPV-argumentumok",
         "MPV_REUSE_INSTANCE_LABEL": "MPV-példány újrafelhasználása",
         "MPV_REUSE_INSTANCE_DESCRIPTION": "Bekapcsolásakor ugyanaz az MPV-ablak használható különböző adatfolyamok lejátszására. Kikapcsolásakor minden adatfolyam új MPV-ablakban nyílik meg.",
@@ -547,9 +547,9 @@
         "VLC_PLAYER_PATH_DESCRIPTION": "Adja meg a VLC elérési útját. macOS rendszeren használható a VLC alkalmazáscsomag, például /Applications/VLC.app, vagy a futtatható fájl elérési útja.",
         "VLC_PLAYER_PATH": "VLC-lejátszó elérési útja",
         "VLC_PLAYER_ARGUMENTS_LABEL": "VLC parancssori argumentumai",
-        "VLC_PLAYER_ARGUMENTS_DESCRIPTION": "Az IPTVnator új külső lejátszófolyamat indításakor ezeket a nem kötelező argumentumokat adja át a VLC-nek.",
+        "VLC_PLAYER_ARGUMENTS_DESCRIPTION": "Az IPTV Player NEW új külső lejátszófolyamat indításakor ezeket a nem kötelező argumentumokat adja át a VLC-nek.",
         "VLC_PLAYER_ARGUMENTS": "VLC-argumentumok",
-        "EXTERNAL_PLAYER_ARGUMENTS_HINT": "Soronként egy argumentumot adjon meg. Az alkalmazás ezeket az adatfolyamhoz tartozó IPTVnator-beállítások előtt alkalmazza.",
+        "EXTERNAL_PLAYER_ARGUMENTS_HINT": "Soronként egy argumentumot adjon meg. Az alkalmazás ezeket az adatfolyamhoz tartozó IPTV Player NEW-beállítások előtt alkalmazza.",
         "VLC_REUSE_INSTANCE_LABEL": "VLC-példány újrafelhasználása",
         "VLC_REUSE_INSTANCE_DESCRIPTION": "Bekapcsolásakor ugyanaz a VLC-ablak használható különböző adatfolyamok lejátszására. Kikapcsolásakor minden adatfolyam új VLC-ablakban nyílik meg.",
         "REMOTE_CONTROL": "Távvezérlés",
@@ -673,12 +673,12 @@
         "MIGRATION_FAILED": "Az áthelyezés nem sikerült. A lejátszási listák továbbra is ebben a böngészőben vannak; próbálja újra a Beállítások → Szerver menüben.",
         "MIGRATION_RELOAD": "Újratöltés",
         "SIGN_IN_TITLE": "Hozzáférési token szükséges",
-        "SIGN_IN_DESCRIPTION": "Ez az IPTVnator szerver hozzáférési tokent kér, mielőtt megjeleníti a lejátszási listáit.",
+        "SIGN_IN_DESCRIPTION": "Ez az IPTV Player NEW szerver hozzáférési tokent kér, mielőtt megjeleníti a lejátszási listáit.",
         "SIGN_IN_TOKEN_LABEL": "Hozzáférési token",
         "SIGN_IN_HINT": "A szerver IPTVNATOR_ACCESS_TOKEN beállításában találja.",
         "SIGN_IN_REJECTED": "A tokent elutasította a szerver. Ellenőrizze, és próbálja újra.",
         "SIGN_IN_UNREACHABLE": "A szerver nem érhető el. Ellenőrizze a kapcsolatot, és próbálja újra.",
-        "SIGN_IN_STORAGE": "Ez a böngésző nem engedi, hogy az IPTVnator megőrizze a tokent. Engedélyezze a webhelyadatokat ehhez az oldalhoz, és próbálja újra.",
+        "SIGN_IN_STORAGE": "Ez a böngésző nem engedi, hogy az IPTV Player NEW megőrizze a tokent. Engedélyezze a webhelyadatokat ehhez az oldalhoz, és próbálja újra.",
         "SIGN_IN_CONTINUE": "Tovább",
         "STATUS_ONLINE": "Szerver csatlakoztatva",
         "STATUS_OFFLINE": "A szerver nem érhető el",
@@ -1044,10 +1044,10 @@
         "RETRY": "Újrapróbálkozás",
         "ALLOW_PRIVATE_SOURCE": "Forrás engedélyezése",
         "ALLOW_PRIVATE_SOURCE_TITLE": "Engedélyezi a magánhálózaton található EPG-forrást?",
-        "ALLOW_PRIVATE_SOURCE_WARNING": "Csak akkor engedélyezze, ha megbízik az EPG-forrásban. Az IPTVnator engedélyezi, hogy ez a pontos EPG URL privát vagy helyi hálózati címekhez kapcsolódjon.",
+        "ALLOW_PRIVATE_SOURCE_WARNING": "Csak akkor engedélyezze, ha megbízik az EPG-forrásban. Az IPTV Player NEW engedélyezi, hogy ez a pontos EPG URL privát vagy helyi hálózati címekhez kapcsolódjon.",
         "TRUST_TLS_HOST": "Kiszolgáló megbízhatónak jelölése",
         "TRUST_TLS_HOST_TITLE": "Megbízik ebben a kiszolgálóban az érvénytelen tanúsítvány ellenére?",
-        "TRUST_TLS_HOST_WARNING": "Csak akkor folytassa, ha megbízik ebben a kiszolgálóban. Az IPTVnator ennél a kiszolgálónál engedélyezi az érvénytelen TLS-tanúsítványokat, más kiszolgálóknál azonban továbbra is érvényes tanúsítványt követel meg.",
+        "TRUST_TLS_HOST_WARNING": "Csak akkor folytassa, ha megbízik ebben a kiszolgálóban. Az IPTV Player NEW ennél a kiszolgálónál engedélyezi az érvénytelen TLS-tanúsítványokat, más kiszolgálóknál azonban továbbra is érvényes tanúsítványt követel meg.",
         "CURRENT_PROGRAM": "Aktuális műsor",
         "ARCHIVE_PLAYBACK": "Műsor visszanézése",
         "COLLAPSE_PANEL": "EPG-panel összecsukása",
@@ -1164,7 +1164,7 @@
     "NO": "Nem",
     "MENU": {
         "OPEN": "Menü megnyitása",
-        "SUPPORT_ARIA": "Az IPTVnator támogatása a GitHubon",
+        "SUPPORT_ARIA": "Az IPTV Player NEW támogatása a GitHubon",
         "SETTINGS_ARIA": "Beállítások megnyitása",
         "BUG_REPORT": "Hibabejelentés",
         "WHAT_IS_NEW": "Újdonságok",
@@ -1173,10 +1173,10 @@
         "SUPPORT_PROJECT": "A projekt támogatása"
     },
     "ABOUT": {
-        "TITLE": "Az IPTVnator névjegye",
+        "TITLE": "Az IPTV Player NEW névjegye",
         "DESCRIPTION": "Többplatformos IPTV-lejátszó számos funkcióval, többek között M3U- és M3U8-lejátszási listák, kedvencek, műsorújság, tévéarchívum és visszanézés támogatásával.",
         "VERSION": "Verzió",
-        "GITHUB_TOOLTIP": "Az IPTVnator GitHub-adattára",
+        "GITHUB_TOOLTIP": "Az IPTV Player NEW GitHub-adattára",
         "BUY_ME_A_COFFEE_TOOLTIP": "Hívj meg egy kávéra",
         "TWITTER_TOOLTIP": "Megosztás a Twitteren"
     },
@@ -1614,7 +1614,7 @@
         "STOP_RECORDING": "Felvétel leállítása",
         "REMOVE_RECORDING_DIALOG": {
             "TITLE": "Eltávolítja a felvételt a kezelőből?",
-            "MESSAGE": "A művelet eltávolítja a bejegyzést az IPTVnator alkalmazásból. A felvett fájl a lemezen marad."
+            "MESSAGE": "A művelet eltávolítja a bejegyzést az IPTV Player NEW alkalmazásból. A felvett fájl a lemezen marad."
         },
         "RECORDING_DETAIL": {
             "PROGRAMS": "Felvett műsorok",
@@ -1625,7 +1625,7 @@
         "REMOVE_FROM_MANAGER": "Eltávolítás a letöltéskezelőből",
         "REMOVE_COMPLETED_DIALOG": {
             "TITLE": "Eltávolítja a letöltéskezelőből?",
-            "MESSAGE": "Ezzel az elem eltávolításra kerül az IPTVnatorból. A letöltött médiafájl a lemezen marad."
+            "MESSAGE": "Ezzel az elem eltávolításra kerül az IPTV Player NEWból. A letöltött médiafájl a lemezen marad."
         },
         "REMOVE_PARTIAL_DIALOG": {
             "TITLE": "Eltávolítja a részleges letöltést?",
@@ -1713,8 +1713,8 @@
             "TOGGLE_MUTE": "Nem sikerült be- vagy kikapcsolni a némítást",
             "STATUS": "Nem sikerült lekérni a távvezérlés állapotát"
         },
-        "HEADER": "IPTVnator távvezérlő",
-        "FOOTER": "IPTVnator távvezérlő"
+        "HEADER": "IPTV Player NEW távvezérlő",
+        "FOOTER": "IPTV Player NEW távvezérlő"
     },
     "WORKSPACE": {
         "FAVORITES_ONLY": "Csak kedvencek",
@@ -2015,7 +2015,7 @@
         },
         "SHORTCUTS": {
             "TITLE": "Billentyűparancsok",
-            "SUBTITLE": "Az IPTVnatorban elérhető munkaterületi, navigációs, lejátszási és párbeszédpanel-billentyűparancsok.",
+            "SUBTITLE": "Az IPTV Player NEWban elérhető munkaterületi, navigációs, lejátszási és párbeszédpanel-billentyűparancsok.",
             "OPEN_TOOLTIP": "Billentyűparancsok (?)",
             "OPEN_ARIA": "Billentyűparancsok megnyitása",
             "PLATFORM": {

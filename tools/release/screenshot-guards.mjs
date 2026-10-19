@@ -514,7 +514,7 @@ export function evaluateFrameReport(report) {
 /* ------------------------------------------------------------------ */
 
 /**
- * Snapshots every file in the real database directory — `iptvnator.db` plus
+ * Snapshots every file in the real database directory — `iptv-player-new.db` plus
  * its SQLite WAL sidecars (`-wal`, `-shm`), where writes live until a
  * checkpoint, so a mutation cannot hide in them.
  *

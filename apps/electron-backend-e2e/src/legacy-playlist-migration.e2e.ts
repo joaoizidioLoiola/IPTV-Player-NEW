@@ -51,7 +51,7 @@ async function sql(
             }
         },
         {
-            file: join(dataDir, 'databases/iptvnator.db'),
+            file: join(dataDir, 'databases/iptv-player-new.db'),
             dependency: join(workspaceRoot, 'node_modules/better-sqlite3'),
             statement,
         }
