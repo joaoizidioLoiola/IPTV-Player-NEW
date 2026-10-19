@@ -3,7 +3,7 @@
 **Date:** 2026-10-18  
 **Status:** Written specification approved on 2026-10-18.  
 **Proposed local project path:** `E:\DEV\iptv-player` (not created yet).  
-**Working product name:** Windows IPTV Player; replace with a distinct name and icon before packaging.
+**Product name:** `IPTV Player NEW`; create an original icon before packaging.
 **Upstream baseline:** `4gray/iptvnator` commit `81910afc22f8d66a14061e58d29e70109ee3efe6`.
 
 ## 1. Purpose and success criteria
@@ -33,7 +33,7 @@ The public [4gray/iptvnator](https://github.com/4gray/iptvnator) project is the 
 - Produce the Windows x64 NSIS installer (`setup.exe`) using the upstream Electron Builder packaging path; do not produce macOS or Linux packages for this project.
 - Change the upstream app ID, product name, icon, file associations, and user-data location before packaging.
 - Do not ship an updater pointed at the upstream IPTVnator release channel. The first local installer has no auto-update endpoint; configure updates only after the new project's release destination is selected.
-- The final public product name and release destination remain to be chosen before a distributable release.
+- The release destination remains to be chosen before enabling auto-updates or publishing a distributable release.
 
 ## 5. Credential and local-data security
 
@@ -66,7 +66,7 @@ If a playlist is invalid, a provider is unreachable, playback fails, or the cred
 - No IPTV service, playlists, channels, accounts, or media content are provided by the application.
 - No source-code extraction or copying from the Microsoft Store package.
 - No automatic import of another app's saved credentials or profile.
-- No public release or auto-update configuration until the product identity and release destination are chosen.
+- No public release or auto-update configuration until the original icon and release destination are approved.
 
 ## 9. Source references
 
