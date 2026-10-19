@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <style>
+      .dial { fill: none; stroke: #4F46E5; stroke-width: 80; stroke-linecap: round; }
+      .knob { fill: #4F46E5; }
+    </style>
+  </defs>
+  <!-- TV tuning dial / aperture -->
+  <circle class="dial" cx="512" cy="512" r="304"/>
+  <circle class="knob" cx="512" cy="512" r="104"/>
+  <circle class="knob" cx="512" cy="256" r="56"/>
+</svg>

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <style>
+      .frame { fill: #0066FF; }
+      .play { fill: #FFFFFF; stroke: #FFFFFF; stroke-width: 56; stroke-linejoin: round; }
+    </style>
+  </defs>
+  <!-- Modern TV screen frame with safe rounded corners for Windows masks -->
+  <rect class="frame" x="128" y="128" width="768" height="768" rx="160" ry="160"/>
+  <!-- Rounded play triangle, centered and scaled for 16-256 px legibility -->
+  <path class="play" d="M392 360 L632 512 L392 664 Z"/>
+</svg>

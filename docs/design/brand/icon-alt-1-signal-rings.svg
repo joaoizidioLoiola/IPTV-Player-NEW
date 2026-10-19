@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <style>
+      .ring { fill: none; stroke: #00A3E0; stroke-width: 80; stroke-linecap: round; }
+      .dot { fill: #00A3E0; }
+    </style>
+  </defs>
+  <!-- Broadcast signal: concentric rings -->
+  <circle class="ring" cx="512" cy="512" r="288"/>
+  <circle class="ring" cx="512" cy="512" r="160"/>
+  <circle class="dot" cx="512" cy="512" r="80"/>
+</svg>
