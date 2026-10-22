@@ -68,6 +68,30 @@ describe('NativePlayerService', () => {
 
         expect(stop).toHaveBeenCalledTimes(1);
     });
+
+    it('opens an external player through ACTION_VIEW when registered', async () => {
+        const openExternal = jest.fn().mockResolvedValue(undefined);
+        setWindowCapacitor({ Plugins: { NativePlayer: { openExternal } } });
+        const service = new NativePlayerService();
+
+        await service.openExternal({
+            url: 'http://portal.example/live/1.ts',
+            title: 'News',
+        });
+
+        expect(openExternal).toHaveBeenCalledWith({
+            url: 'http://portal.example/live/1.ts',
+            title: 'News',
+        });
+    });
+
+    it('rejects openExternal when the bridge is absent', async () => {
+        const service = new NativePlayerService();
+
+        await expect(
+            service.openExternal({ url: 'http://portal.example/live/1.ts' })
+        ).rejects.toThrow('Native external player bridge is not available');
+    });
 });
 
 function setWindowCapacitor(value: unknown): void {

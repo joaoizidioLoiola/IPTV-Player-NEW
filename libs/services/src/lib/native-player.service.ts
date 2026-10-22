@@ -11,9 +11,15 @@ export interface NativePlayerPlayback {
     readonly startPositionMs?: number;
 }
 
+export interface NativeExternalPlayback {
+    readonly url: string;
+    readonly title?: string;
+}
+
 interface NativePlayerPluginBridge {
     play?: (options: Record<string, unknown>) => Promise<void>;
     stop?: () => Promise<void>;
+    openExternal?: (options: Record<string, unknown>) => Promise<void>;
 }
 
 interface CapacitorPluginsGlobal {
@@ -55,6 +61,23 @@ export class NativePlayerService {
 
     async stop(): Promise<void> {
         await this.plugin?.stop?.();
+    }
+
+    /**
+     * Hands the stream to an installed external player through ACTION_VIEW.
+     * Only the URL and title travel; arbitrary portal headers are not part of
+     * the Android intent contract.
+     */
+    async openExternal(playback: NativeExternalPlayback): Promise<void> {
+        const plugin = this.plugin;
+        if (typeof plugin?.openExternal !== 'function') {
+            throw new Error('Native external player bridge is not available');
+        }
+
+        await plugin.openExternal({
+            url: playback.url,
+            title: playback.title ?? '',
+        });
     }
 
     private get plugin(): NativePlayerPluginBridge | undefined {

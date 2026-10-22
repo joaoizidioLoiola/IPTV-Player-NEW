@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { DataService } from '@iptvnator/services';
+import { DataService, NativePlayerService } from '@iptvnator/services';
 import {
     ExternalPlayerSession,
     OPEN_MPV_PLAYER,
@@ -20,6 +20,7 @@ export class PlayerService {
     private lazyDialog = inject(LazyMatDialog);
     private dataService = inject(DataService);
     private settingsStore = inject(SettingsStore);
+    private nativePlayer = inject(NativePlayerService);
 
     isEmbeddedPlayer(
         player = this.settingsStore.player() ?? VideoPlayer.VideoJs
@@ -66,6 +67,16 @@ export class PlayerService {
         playback: ResolvedPortalPlayback,
         hideExternalInfoDialog = true
     ): Promise<ExternalPlayerSession | void> {
+        // The Android shell has no MPV/VLC IPC: hand the stream to whichever
+        // external player the user installed, through ACTION_VIEW.
+        if (this.nativePlayer.isAvailable()) {
+            await this.nativePlayer.openExternal({
+                url: playback.streamUrl,
+                title: playback.title,
+            });
+            return;
+        }
+
         const player = this.settingsStore.player() ?? VideoPlayer.VideoJs;
 
         if (player === VideoPlayer.MPV) {

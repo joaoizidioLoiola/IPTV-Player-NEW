@@ -39,6 +39,7 @@ import {
     ResizableDirective,
 } from '@iptvnator/ui/components';
 import {
+    NativePlayerService,
     ParentalLockService,
     PlaylistsService,
     RecordingsService,
@@ -195,6 +196,7 @@ export class StalkerLiveStreamLayoutComponent
     private readonly dialog = inject(MatDialog);
     private readonly epgBridge = inject(EpgRuntimeBridgeService);
     private readonly runtime = inject(RuntimeCapabilitiesService);
+    private readonly nativePlayer = inject(NativePlayerService);
     private readonly settingsStore = inject(SettingsStore);
     private readonly portalPlayer = inject(PORTAL_PLAYER);
     private readonly streamHeaders = inject(ElectronStreamHeadersService);
@@ -382,6 +384,12 @@ export class StalkerLiveStreamLayoutComponent
         this.portalPlayer.isEmbeddedPlayer()
     );
     readonly activePlayback = signal<ResolvedPortalPlayback | null>(null);
+    /**
+     * The Media3 activity owns the screen for this playback; the WebView
+     * player must not mount behind it. `activePlayback` keeps the real URL
+     * for EPG, recordings and the controlled-channel bridge.
+     */
+    readonly nativePlaybackActive = signal(false);
     private readonly activePlaybackIdentity =
         signal<StalkerActiveLivePlaybackIdentity | null>(null);
     readonly playbackSessionKey = computed(() => {
@@ -1008,6 +1016,7 @@ export class StalkerLiveStreamLayoutComponent
                     return;
                 }
                 commitNavigation();
+                this.nativePlaybackActive.set(false);
                 this.setActivePlayback(playback, null);
                 return;
             }
@@ -1022,6 +1031,26 @@ export class StalkerLiveStreamLayoutComponent
                 void this.loadEpgForChannel(item);
             }
 
+            const nativePlayback =
+                this.usesEmbeddedPlayer() && this.nativePlayer.isAvailable();
+            if (nativePlayback) {
+                if (!sourceId || !channelId) return;
+                this.nativePlaybackActive.set(true);
+                this.setActivePlayback(playback, {
+                    sourceId,
+                    contentId: channelId,
+                });
+                void this.nativePlayer.play({
+                    url: playback.streamUrl,
+                    title: playback.title,
+                    contentType: 'live',
+                    userAgent: playback.userAgent,
+                    headers: playback.headers,
+                });
+                return;
+            }
+
+            this.nativePlaybackActive.set(false);
             if (this.usesEmbeddedPlayer()) {
                 if (!sourceId || !channelId) return;
                 this.setActivePlayback(playback, {
@@ -1109,6 +1138,7 @@ export class StalkerLiveStreamLayoutComponent
     }
 
     private clearActivePlayback(): void {
+        this.nativePlaybackActive.set(false);
         this.activePlaybackIdentity.set(null);
         this.activePlayback.set(null);
     }

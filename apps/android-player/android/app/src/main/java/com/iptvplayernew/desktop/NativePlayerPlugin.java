@@ -85,6 +85,38 @@ public class NativePlayerPlugin extends Plugin {
         call.resolve();
     }
 
+    /**
+     * Hand a stream to an installed external player (VLC, MX Player, ...).
+     * Android has no standard header extras for ACTION_VIEW, so only the URL
+     * and title travel; portals that require Cookie/Authorization keep the
+     * native player.
+     */
+    @PluginMethod
+    public void openExternal(PluginCall call) {
+        String url = call.getString("url");
+        if (url == null || url.isEmpty()) {
+            call.reject("url is required");
+            return;
+        }
+
+        String title = valueOr(call.getString("title"), "");
+        Intent viewIntent = new Intent(Intent.ACTION_VIEW)
+            .setDataAndType(android.net.Uri.parse(url), "video/*")
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        if (!title.isEmpty()) {
+            viewIntent.putExtra(Intent.EXTRA_TITLE, title);
+        }
+
+        try {
+            Intent chooser = Intent.createChooser(viewIntent, title)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            getContext().startActivity(chooser);
+            call.resolve();
+        } catch (android.content.ActivityNotFoundException noPlayer) {
+            call.reject("No installed app can open this stream");
+        }
+    }
+
     private static String valueOr(String value, String fallback) {
         return value == null || value.isEmpty() ? fallback : value;
     }

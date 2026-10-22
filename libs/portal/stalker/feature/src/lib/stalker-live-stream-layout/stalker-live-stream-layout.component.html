@@ -142,7 +142,7 @@
             />
         }
     } @else if (stalkerStore.selectedItem()) {
-        @if (streamUrl() && (isEmbeddedPlayer || isRadioMode())) {
+        @if (streamUrl() && (isEmbeddedPlayer || isRadioMode()) && !nativePlaybackActive()) {
             <div class="video-player">
                 @if (isRadioMode()) {
                     <app-audio-player

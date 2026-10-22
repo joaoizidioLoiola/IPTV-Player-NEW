@@ -194,12 +194,14 @@ media controls.
 - **Audio/subtitle selection**: a track dialog is available through the
   on-screen button and the TV remote `MENU`/`INFO` key, overriding
   `TrackSelectionParameters` per track type.
-- The Angular side routes Xtream live channels to `NativePlayerService` when
-  `RuntimeCapabilitiesService.supportsNativePlayer` is true (the shell
-  registered the `NativePlayer` plugin). VOD and catch-up remain on the web
-  player for now.
-- **[PENDENTE]** Native "open in external player" intent, and UDP/RTSP
-  verification on real hardware.
+- The Angular side routes Xtream and Stalker live channels to
+  `NativePlayerService` when `RuntimeCapabilitiesService.supportsNativePlayer`
+  is true (the shell registered the `NativePlayer` plugin). VOD and catch-up
+  remain on the web player for now.
+- **External player**: on Android, the MPV/VLC settings and the web player's
+  fallback use `ACTION_VIEW` (URL and title only; Android has no standard
+  header extras), so any installed player can take the stream.
+- **[PENDENTE]** UDP/RTSP verification on real hardware.
 
 **[FATO]** Validated on the emulator against the real panel: a live Xtream
 channel opens in `PlayerActivity`, MediaSession reports `PLAYING`, the
@@ -372,9 +374,9 @@ and no D-pad test.
 | **2** | Media3 plugin: fullscreen Activity, `PlayerView`, headers, live edge, subtitle and audio track selection, `MediaSession` and foreground service; native "open in external player" intent | Linear streams play natively with working audio/subtitle selection; background audio continues |
 
 **[IMPLEMENTADO — Fase 2 parcial]** Fullscreen Media3 playback, portal
-headers, live edge, audio/subtitle selection, `MediaSession` and the
-foreground service are in the APK. The native "open in external player" intent
-and UDP/RTSP verification on real hardware remain open (see §3.3).
+headers, live edge, audio/subtitle selection, `MediaSession`, the foreground
+service and the native external-player intent are in the APK. UDP/RTSP
+verification on real hardware remains open (see §3.3).
 | **3** | TV shell and spatial focus; overscan-safe tokens; 48 dp targets; hover-independent affordances | 100% of navigation works by D-pad with a visible focus indicator, at 960×540 and 1920×1080 |
 | **4** | E2E coverage: TV viewports, D-pad journeys, touch journeys; packaging: keystore, `versionCode` mapping, AAB, 64-bit and 16 KB page alignment | The AAB installs on phone and TV box, and the D-pad suite is green |
 | **5** | Distribution: signed APK on our site, developer verification for Brazil, in-app update path for the APK channel | A user can install, update and uninstall without touching a store |
