@@ -1,4 +1,3 @@
-import { execFileSync } from 'child_process';
 import { and, eq } from 'drizzle-orm';
 import { stat } from 'node:fs/promises';
 import { basename } from 'path';
@@ -6,6 +5,7 @@ import { getDatabase } from '../../database/connection';
 import * as schema from '../../database/schema';
 import { embeddedMpvRecordingTracker } from '../../services/embedded-mpv-recording-tracker';
 import { broadcastRecordingsUpdate } from './recording-broadcast';
+import { queryProcessInfos } from './recording-process-probes';
 
 const RECOVERY_STAT_TIMEOUT_MS = 3_000;
 
@@ -81,40 +81,16 @@ function isProcessAlive(pid: number): boolean {
  * instance can ever finalize it. When the name cannot be read the answer
  * stays `true` — never repair a row a live peer might still own.
  */
-/**
- * Bound for each synchronous `ps`/`tasklist`/PowerShell spawn. The probes
- * run on the main thread once per unique pid (memoized per pass), so a hung
- * process query degrades to the conservative fallback instead of blocking
- * startup indefinitely.
- */
-const PROCESS_PROBE_TIMEOUT_MS = 2_000;
-
-function processLooksLikeOwnInstance(pid: number): boolean {
-    try {
-        const output =
-            process.platform === 'win32'
-                ? execFileSync(
-                      'tasklist',
-                      ['/FI', `PID eq ${pid}`, '/FO', 'CSV', '/NH'],
-                      { encoding: 'utf8', timeout: PROCESS_PROBE_TIMEOUT_MS }
-                  )
-                : execFileSync('ps', ['-p', String(pid), '-o', 'comm='], {
-                      encoding: 'utf8',
-                      timeout: PROCESS_PROBE_TIMEOUT_MS,
-                  });
-        const name = output.trim().toLowerCase();
-        if (!name) {
-            return true;
-        }
-        const ownExecutable = basename(process.execPath).toLowerCase();
-        return (
-            name.includes('iptvnator') ||
-            name.includes('electron') ||
-            (ownExecutable.length > 0 && name.includes(ownExecutable))
-        );
-    } catch {
+function processLooksLikeOwnInstance(name: string | undefined): boolean {
+    if (!name) {
         return true;
     }
+    const ownExecutable = basename(process.execPath).toLowerCase();
+    return (
+        name.includes('iptvnator') ||
+        name.includes('electron') ||
+        (ownExecutable.length > 0 && name.includes(ownExecutable))
+    );
 }
 
 /**
@@ -123,50 +99,6 @@ function processLooksLikeOwnInstance(pid: number): boolean {
  * drift without weakening the recycled-pid discrimination.
  */
 const START_TIME_TOLERANCE_MS = 5_000;
-
-/** `[[dd-]hh:]mm:ss` from `ps -o etime=` → seconds, or null. */
-function parseEtimeSeconds(etime: string): number | null {
-    const match = /^(?:(\d+)-)?(?:(\d+):)?(\d{1,2}):(\d{2})$/.exec(etime);
-    if (!match) {
-        return null;
-    }
-    const [, days, hours, minutes, seconds] = match;
-    return (
-        (days ? Number(days) * 86_400 : 0) +
-        (hours ? Number(hours) * 3_600 : 0) +
-        Number(minutes) * 60 +
-        Number(seconds)
-    );
-}
-
-function processStartTimeMs(pid: number): number | null {
-    try {
-        if (process.platform === 'win32') {
-            const iso = execFileSync(
-                'powershell.exe',
-                [
-                    '-NoProfile',
-                    '-Command',
-                    `(Get-Process -Id ${pid}).StartTime.ToUniversalTime().ToString('o')`,
-                ],
-                { encoding: 'utf8', timeout: PROCESS_PROBE_TIMEOUT_MS }
-            ).trim();
-            const parsed = Date.parse(iso);
-            return Number.isFinite(parsed) ? parsed : null;
-        }
-        const etime = execFileSync(
-            'ps',
-            ['-p', String(pid), '-o', 'etime='],
-            { encoding: 'utf8', timeout: PROCESS_PROBE_TIMEOUT_MS }
-        ).trim();
-        const elapsedSeconds = parseEtimeSeconds(etime);
-        return elapsedSeconds === null
-            ? null
-            : Date.now() - elapsedSeconds * 1_000;
-    } catch {
-        return null;
-    }
-}
 
 /**
  * True only when the process behind `pid` PROVABLY started after the
@@ -226,25 +158,24 @@ export async function reconcileStaleRecordings(): Promise<void> {
         // here cannot miss it.
         const liveRowIds = await embeddedMpvRecordingTracker.activeRowIds();
 
-        // Rows from one crashed instance share a pid: memoize the (bounded,
-        // synchronous) process probes so each unique pid costs at most one
-        // name query and one start-time query per pass.
-        const nameVerdicts = new Map<number, boolean>();
-        const startTimes = new Map<number, number | null>();
-        const looksLikeOwnInstance = (pid: number): boolean => {
-            let verdict = nameVerdicts.get(pid);
-            if (verdict === undefined) {
-                verdict = processLooksLikeOwnInstance(pid);
-                nameVerdicts.set(pid, verdict);
-            }
-            return verdict;
-        };
-        const startTimeOf = (pid: number): number | null => {
-            if (!startTimes.has(pid)) {
-                startTimes.set(pid, processStartTimeMs(pid));
-            }
-            return startTimes.get(pid) ?? null;
-        };
+        // Rows from one crashed instance share a pid: ONE bounded process
+        // query answers every unique pid of the pass, and the returned map
+        // memoizes each pid's name and start time.
+        const ownerPids = [
+            ...new Set(
+                stale
+                    .map((row) => row.ownerPid)
+                    .filter(
+                        (pid): pid is number =>
+                            typeof pid === 'number' && pid !== process.pid
+                    )
+            ),
+        ];
+        const processInfos = await queryProcessInfos(ownerPids);
+        const looksLikeOwnInstance = (pid: number): boolean =>
+            processLooksLikeOwnInstance(processInfos.get(pid)?.name);
+        const startTimeOf = (pid: number): number | null =>
+            processInfos.get(pid)?.startMs ?? null;
 
         const candidates = stale.filter((row) => {
             if (liveRowIds.has(row.id)) {

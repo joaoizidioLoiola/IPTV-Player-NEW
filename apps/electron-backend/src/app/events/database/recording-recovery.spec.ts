@@ -1,7 +1,7 @@
 const mockGetDatabase = jest.fn();
 const mockStatSync = jest.fn();
 const mockActiveRowIds = jest.fn();
-const mockExecFileSync = jest.fn();
+const mockExecFile = jest.fn();
 const mockBroadcast = jest.fn();
 
 jest.mock('../../database/connection', () => ({
@@ -15,7 +15,7 @@ jest.mock('node:fs/promises', () => ({
 }));
 jest.mock('child_process', () => ({
     ...jest.requireActual<typeof import('child_process')>('child_process'),
-    execFileSync: (...args: unknown[]) => mockExecFileSync(...args),
+    execFile: (...args: unknown[]) => mockExecFile(...args),
 }));
 jest.mock('../../services/embedded-mpv-recording-tracker', () => ({
     embeddedMpvRecordingTracker: {
@@ -34,6 +34,12 @@ interface StaleRow {
     endedAt: string | null;
     ownerPid?: number | null;
     startedAt?: string;
+}
+
+interface ProcessProbeRow {
+    pid: number;
+    name: string;
+    startMs: number | null;
 }
 
 /** A recording that began an hour ago — older than any recycled pid. */
@@ -59,13 +65,74 @@ function mockDb(rows: StaleRow[]) {
     return { updateSet, updateWhere };
 }
 
+/** `[[hh:]mm]ss` elapsed for `ps -o etime=` answers in the POSIX mock. */
+function etimeFromElapsedMs(elapsedMs: number): string {
+    const totalSeconds = Math.max(0, Math.round(elapsedMs / 1_000));
+    const seconds = totalSeconds % 60;
+    const minutes = Math.floor(totalSeconds / 60) % 60;
+    const hours = Math.floor(totalSeconds / 3600);
+    if (hours > 0) {
+        return `${hours}:${String(minutes).padStart(2, '0')}:${String(
+            seconds
+        ).padStart(2, '0')}`;
+    }
+    return `${minutes}:${String(seconds).padStart(2, '0')}`;
+}
+
+/**
+ * Answer the ONE batched process query of the pass for all probed pids at
+ * once, in whichever shape the host platform's query produces. `startMs`
+ * null means unreadable (Windows prints an empty start column; POSIX omits
+ * the pid, the way `ps` does for a vanished process).
+ */
+function mockProcessQuery(rows: ProcessProbeRow[]): void {
+    mockExecFile.mockImplementation(
+        (
+            command: string,
+            _args: unknown[],
+            _options: unknown,
+            callback: (error: Error | null, stdout: string) => void
+        ) => {
+            if (command === 'powershell.exe') {
+                callback(
+                    null,
+                    rows
+                        .map((row) =>
+                            [
+                                row.pid,
+                                row.name,
+                                row.startMs === null
+                                    ? ''
+                                    : new Date(row.startMs).toISOString(),
+                            ].join('|')
+                        )
+                        .join('\r\n')
+                );
+                return;
+            }
+            callback(
+                null,
+                rows
+                    .filter((row) => row.startMs !== null)
+                    .map(
+                        (row) =>
+                            `  ${row.pid} ${row.name} ${etimeFromElapsedMs(
+                                Date.now() - (row.startMs as number)
+                            )}`
+                    )
+                    .join('\n')
+            );
+        }
+    );
+}
+
 describe('reconcileStaleRecordings', () => {
     beforeEach(() => {
         jest.clearAllMocks();
         mockActiveRowIds.mockResolvedValue(new Set<number>());
         // A live peer pid resolves to an IPTVnator-looking process name
         // unless a test says otherwise.
-        mockExecFileSync.mockReturnValue('iptvnator');
+        mockProcessQuery([{ pid: 4242, name: 'iptvnator', startMs: null }]);
     });
 
     it('repairs a playable partial as interrupted with its size', async () => {
@@ -177,7 +244,7 @@ describe('reconcileStaleRecordings', () => {
         const killSpy = jest
             .spyOn(process, 'kill')
             .mockImplementation(() => true);
-        mockExecFileSync.mockReturnValue('postgres');
+        mockProcessQuery([{ pid: 4242, name: 'postgres', startMs: null }]);
 
         await reconcileStaleRecordings();
 
@@ -202,16 +269,13 @@ describe('reconcileStaleRecordings', () => {
         const killSpy = jest
             .spyOn(process, 'kill')
             .mockImplementation(() => true);
-        mockExecFileSync.mockImplementation((_cmd, args) => {
-            const joined = Array.isArray(args) ? args.join(' ') : '';
-            if (joined.includes('etime')) {
-                return '05:00';
-            }
-            if (joined.includes('Get-Process')) {
-                return new Date(Date.now() - 300_000).toISOString();
-            }
-            return 'electron';
-        });
+        mockProcessQuery([
+            {
+                pid: 4242,
+                name: 'electron',
+                startMs: Date.now() - 300_000,
+            },
+        ]);
 
         await reconcileStaleRecordings();
 
@@ -233,16 +297,13 @@ describe('reconcileStaleRecordings', () => {
         const killSpy = jest
             .spyOn(process, 'kill')
             .mockImplementation(() => true);
-        mockExecFileSync.mockImplementation((_cmd, args) => {
-            const joined = Array.isArray(args) ? args.join(' ') : '';
-            if (joined.includes('etime')) {
-                return '02:00:00';
-            }
-            if (joined.includes('Get-Process')) {
-                return new Date(Date.now() - 7_200_000).toISOString();
-            }
-            return 'iptvnator';
-        });
+        mockProcessQuery([
+            {
+                pid: 4242,
+                name: 'iptvnator',
+                startMs: Date.now() - 7_200_000,
+            },
+        ]);
 
         await reconcileStaleRecordings();
 
@@ -280,12 +341,48 @@ describe('reconcileStaleRecordings', () => {
         const killSpy = jest
             .spyOn(process, 'kill')
             .mockImplementation(() => true);
-        mockExecFileSync.mockImplementation(() => {
-            throw new Error('ps unavailable');
-        });
+        mockExecFile.mockImplementation(
+            (
+                _command: string,
+                _args: unknown[],
+                _options: unknown,
+                callback: (error: Error | null, stdout: string) => void
+            ) => {
+                callback(new Error('process query unavailable'), '');
+            }
+        );
 
         await reconcileStaleRecordings();
 
+        expect(updateSet).not.toHaveBeenCalled();
+        killSpy.mockRestore();
+    });
+
+    it('queries every pid of the pass with one hidden-window call', async () => {
+        const { updateSet } = mockDb([
+            { id: 1, filePath: '/rec/a.ts', endedAt: null, ownerPid: 4242 },
+            { id: 2, filePath: '/rec/b.ts', endedAt: null, ownerPid: 4242 },
+            { id: 3, filePath: '/rec/c.ts', endedAt: null, ownerPid: 4243 },
+        ]);
+        mockStatSync.mockResolvedValue({ isFile: () => true, size: 2048 });
+        const killSpy = jest
+            .spyOn(process, 'kill')
+            .mockImplementation(() => true);
+        mockProcessQuery([
+            { pid: 4242, name: 'iptvnator', startMs: null },
+            { pid: 4243, name: 'iptvnator', startMs: null },
+        ]);
+
+        await reconcileStaleRecordings();
+
+        // One batched query covers every unique pid; repeated pids cost
+        // nothing extra.
+        expect(mockExecFile).toHaveBeenCalledTimes(1);
+        const [, , options] = mockExecFile.mock.calls[0];
+        expect(options).toMatchObject({
+            windowsHide: true,
+            timeout: 2_000,
+        });
         expect(updateSet).not.toHaveBeenCalled();
         killSpy.mockRestore();
     });

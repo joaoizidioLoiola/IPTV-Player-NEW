@@ -21,4 +21,23 @@ describe('resolveLocalEpgSourcePath', () => {
         expect(resolveLocalEpgSourcePath('')).toBeNull();
         expect(resolveLocalEpgSourcePath('file://')).toBeNull();
     });
+
+    it('rejects POSIX-absolute paths on Windows instead of mapping them onto the current drive', () => {
+        // `isAbsolute('/epg/x.xml')` is true on win32 (drive-relative), which
+        // used to silently resolve to '<current drive>:\epg\x.xml'.
+        expect(resolveLocalEpgSourcePath('/epg/guide.xml', 'win32')).toBeNull();
+
+        // Drive and UNC paths stay valid local references on Windows.
+        const drivePath = join(process.cwd(), 'epg', 'guide.xml');
+        expect(resolveLocalEpgSourcePath(drivePath, 'win32')).toBe(drivePath);
+        expect(
+            resolveLocalEpgSourcePath('\\\\server\\share\\guide.xml', 'win32')
+        ).toBe('\\\\server\\share\\guide.xml');
+    });
+
+    it('still accepts POSIX-absolute paths on POSIX platforms', () => {
+        expect(
+            resolveLocalEpgSourcePath('/epg/guide.xml', 'linux')
+        ).toBe('/epg/guide.xml');
+    });
 });

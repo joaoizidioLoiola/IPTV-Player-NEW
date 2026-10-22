@@ -388,7 +388,11 @@ export async function openVlcPlayer({
                 const proc = spawn(spawnSpec.command, spawnSpec.args, {
                     shell: false,
                     detached: !trackProcess,
-                    stdio: trackProcess ? ['ignore', 'pipe', 'pipe'] : 'ignore',
+                    stdio: trackProcess
+                        ? ['ignore', 'pipe', 'pipe']
+                        : 'ignore',
+                    // vlc.exe is a console-subsystem executable on Windows.
+                    windowsHide: true,
                 });
 
                 proc.once('spawn', () => {

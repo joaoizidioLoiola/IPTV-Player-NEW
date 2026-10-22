@@ -369,7 +369,7 @@ describe('vlc-session.service helpers and launch args', () => {
                     streamUrl,
                     ':meta-title=My Stream',
                 ],
-                { shell: false, detached: true, stdio: 'ignore' }
+                { shell: false, detached: true, stdio: 'ignore', windowsHide: true }
             );
             expect(proc.unref).toHaveBeenCalled();
             expect(session.status).toBe('opened');
@@ -422,6 +422,7 @@ describe('vlc-session.service helpers and launch args', () => {
                 shell: false,
                 detached: false,
                 stdio: ['ignore', 'pipe', 'pipe'],
+                windowsHide: true,
             });
             expect(proc.unref).not.toHaveBeenCalled();
         });

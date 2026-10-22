@@ -3,6 +3,9 @@
  * Timeout and renderer progress reporting live in
  * `epg-worker.service.progress.spec.ts`.
  */
+import os from 'node:os';
+import path from 'node:path';
+
 const mockWorkerInstances: any[] = [];
 const mockResolveWorkerRuntimeBootstrap = jest.fn();
 
@@ -40,6 +43,14 @@ jest.mock('../workers/worker-runtime-paths', () => ({
 
 import { epgSourceGeneration, retireEpgSource } from './epg-source-generation';
 import { EpgWorkerService } from './epg-worker.service';
+
+/**
+ * Absolute local path valid on the host platform. The local-source path
+ * resolver only accepts drive-letter/UNC paths on win32, so tests must not
+ * hardcode POSIX paths — `os.tmpdir()` keeps them portable.
+ */
+const localEpgPath = (...segments: string[]) =>
+    path.join(os.tmpdir(), ...segments);
 
 describe('EpgWorkerService worker lifecycle', () => {
     let service: EpgWorkerService;
@@ -168,7 +179,7 @@ describe('EpgWorkerService worker lifecycle', () => {
         });
 
         it('refuses a local file the authorizer denies without spawning a worker', async () => {
-            const localPath = '/home/user/epg/guide.xml.gz';
+            const localPath = localEpgPath('epg', 'guide.xml.gz');
             const progressSpy = jest.spyOn(service, 'sendProgressToRenderer');
             service.localSourceAuthorizer = {
                 authorize: jest.fn(),
@@ -195,7 +206,7 @@ describe('EpgWorkerService worker lifecycle', () => {
         });
 
         it('cancels a local source retired while its authorization prompt is open', async () => {
-            const localPath = '/home/user/epg/retired.xml.gz';
+            const localPath = localEpgPath('epg', 'retired.xml.gz');
             const progressSpy = jest.spyOn(service, 'sendProgressToRenderer');
             let answer: (allowed: boolean) => void = () => undefined;
             service.localSourceAuthorizer = {
@@ -228,7 +239,7 @@ describe('EpgWorkerService worker lifecycle', () => {
         });
 
         it('unlocks the worker local branch only for an allowed file', async () => {
-            const localPath = '/home/user/epg/guide.xml.gz';
+            const localPath = localEpgPath('epg', 'guide.xml.gz');
             service.localSourceAuthorizer = {
                 authorize: jest.fn(),
                 ensureAllowed: jest.fn().mockResolvedValue(true),
@@ -478,7 +489,7 @@ describe('EpgWorkerService worker lifecycle', () => {
                 })
         );
         service.localSourceAuthorizer = { ensureAllowed, authorize: jest.fn() };
-        const localUrl = '/tmp/force-prompt.xml';
+        const localUrl = localEpgPath('force-prompt.xml');
         const first = service.fetchEpgFromUrl(localUrl, {}, true);
         const duplicate = service.fetchEpgFromUrl(localUrl, {}, true);
         expect(ensureAllowed).toHaveBeenCalledTimes(1);
@@ -575,7 +586,7 @@ describe('EpgWorkerService worker lifecycle', () => {
                     .mockResolvedValue(true),
             };
             const progress = jest.spyOn(service, 'sendProgressToRenderer');
-            const localUrl = '/tmp/prompt-shutdown.xml';
+            const localUrl = localEpgPath('prompt-shutdown.xml');
             const local = service.fetchEpgFromUrl(localUrl).then(
                 () => 'imported',
                 (error: Error) => error.message
@@ -677,7 +688,7 @@ describe('EpgWorkerService worker lifecycle', () => {
                         approve = resolve;
                     }),
             };
-            const localUrl = '/tmp/retired-prompt.xml';
+            const localUrl = localEpgPath('retired-prompt.xml');
             const progress = jest.spyOn(service, 'sendProgressToRenderer');
             const local = service.fetchEpgFromUrl(localUrl);
             const remote = service.fetchEpgFromUrl(url).catch(() => undefined);

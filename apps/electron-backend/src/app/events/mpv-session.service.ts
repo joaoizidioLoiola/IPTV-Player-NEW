@@ -293,6 +293,8 @@ async function launchMpvPlayer(
                 shell: false,
                 detached: !reuseInstance,
                 stdio: reuseInstance ? ['ignore', 'pipe', 'pipe'] : 'ignore',
+                // mpv.exe is a console-subsystem executable on Windows.
+                windowsHide: true,
             });
 
             attachMpvOutputHandlers(proc);

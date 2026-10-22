@@ -137,6 +137,25 @@ describe('external player shutdown on app quit', () => {
         expect(proc.kill).toHaveBeenCalledTimes(1);
     });
 
+    it('spawns MPV with windowsHide to avoid a console flash on Windows', async () => {
+        const proc = createMockChildProcess();
+        (spawn as unknown as jest.Mock).mockReturnValue(proc);
+        mockStoreValues({
+            [MPV_PLAYER_PATH]: '/usr/bin/mpv',
+        });
+
+        await openMpvPlayer({
+            title: 'Console-hidden MPV stream',
+            url: 'https://example.com/live.m3u8',
+        });
+
+        expect(spawn).toHaveBeenCalledWith(
+            '/usr/bin/mpv',
+            expect.anything(),
+            expect.objectContaining({ windowsHide: true })
+        );
+    });
+
     it('blocks a launch until MPV exits after reuse is disabled', async () => {
         const proc = createMockChildProcess();
         (spawn as unknown as jest.Mock).mockReturnValue(proc);

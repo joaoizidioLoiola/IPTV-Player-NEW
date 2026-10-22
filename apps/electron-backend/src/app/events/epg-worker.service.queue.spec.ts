@@ -1,4 +1,6 @@
 /** Import admission across separate IPC requests; worker lifecycle stays real. */
+import os from 'node:os';
+import path from 'node:path';
 import type { EventEmitter } from 'node:events';
 
 interface MockWorker extends EventEmitter {
@@ -184,7 +186,8 @@ describe('EPG import queue', () => {
                 }),
         };
         const local = service.fetchEpgFromUrl(
-            '/tmp/queued-local.xml',
+            // Windows hosts reject POSIX-absolute paths, so keep it platform-absolute.
+            path.join(os.tmpdir(), 'queued-local.xml'),
             {},
             true
         );

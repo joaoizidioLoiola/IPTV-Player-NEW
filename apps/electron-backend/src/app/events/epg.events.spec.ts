@@ -1,3 +1,5 @@
+import os from 'node:os';
+import path from 'node:path';
 import type EpgEventsType from './epg.events';
 
 const mockWorkerInstances: any[] = [];
@@ -925,7 +927,8 @@ describe('EpgEvents', () => {
             )
             .mockResolvedValue(true);
         service.localSourceAuthorizer = { ensureAllowed, authorize: jest.fn() };
-        const url = '/tmp/guide.xml';
+        // Windows hosts reject POSIX-absolute paths, so keep it platform-absolute.
+        const url = path.join(os.tmpdir(), 'guide.xml');
         const oldFetch = service.fetchEpgFromUrl(url);
         const clear = service.clearEpgData();
         await flushPromises();

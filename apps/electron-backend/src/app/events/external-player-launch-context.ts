@@ -205,6 +205,26 @@ export function shouldReuseVlcInstance(
     return !isFlatpak && requestedReuseInstance;
 }
 
+/**
+ * Per-user Windows install locations. The per-user installers of VLC and mpv
+ * write to `%LOCALAPPDATA%\Programs` (and WinGet links live in the WinGet
+ * Links directory) and do not modify the PATH, so the bare executable name
+ * fallback cannot rescue those installs.
+ */
+function getWindowsPerUserPaths(
+    relativeSegments: string[][]
+): string[] {
+    const localAppData = process.env.LOCALAPPDATA?.trim();
+    if (!localAppData) {
+        return [];
+    }
+    // Windows candidates always use win32 separators, even when a win32
+    // platform is simulated on a posix host in tests.
+    return relativeSegments.map((segments) =>
+        path.win32.join(localAppData, ...segments)
+    );
+}
+
 export function getDefaultMpvPath(options: PlayerPathOptions = {}): string {
     const {
         platform = process.platform,
@@ -218,8 +238,12 @@ export function getDefaultMpvPath(options: PlayerPathOptions = {}): string {
 
     if (platform === 'win32') {
         const windowsPaths = [
-            path.join('C:', 'Program Files', 'mpv', 'mpv.exe'),
-            path.join('C:', 'Program Files (x86)', 'mpv', 'mpv.exe'),
+            path.win32.join('C:', 'Program Files', 'mpv', 'mpv.exe'),
+            path.win32.join('C:', 'Program Files (x86)', 'mpv', 'mpv.exe'),
+            ...getWindowsPerUserPaths([
+                ['Programs', 'mpv', 'mpv.exe'],
+                ['Microsoft', 'WinGet', 'Links', 'mpv.exe'],
+            ]),
         ];
 
         for (const mpvPath of windowsPaths) {
@@ -273,14 +297,17 @@ export function getDefaultVlcPath(options: PlayerPathOptions = {}): string {
 
     if (platform === 'win32') {
         const windowsPaths = [
-            path.join('C:', 'Program Files', 'VideoLAN', 'VLC', 'vlc.exe'),
-            path.join(
+            path.win32.join('C:', 'Program Files', 'VideoLAN', 'VLC', 'vlc.exe'),
+            path.win32.join(
                 'C:',
                 'Program Files (x86)',
                 'VideoLAN',
                 'VLC',
                 'vlc.exe'
             ),
+            ...getWindowsPerUserPaths([
+                ['Programs', 'VideoLAN', 'VLC', 'vlc.exe'],
+            ]),
         ];
 
         for (const vlcPath of windowsPaths) {
