@@ -69,9 +69,18 @@ public class NativePlayerPlugin extends Plugin {
 
         ContextCompat.startForegroundService(getContext(), serviceIntent);
 
+        // Start from the current Activity so the player joins the app's task:
+        // system back then finishes PlayerActivity and reveals the app, instead
+        // of closing a standalone task and dropping the user on the launcher.
         Intent playerIntent = new Intent(getContext(), PlayerActivity.class)
-            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        getContext().startActivity(playerIntent);
+            .addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        android.app.Activity activity = getActivity();
+        if (activity != null) {
+            activity.startActivity(playerIntent);
+        } else {
+            playerIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            getContext().startActivity(playerIntent);
+        }
         call.resolve();
     }
 

@@ -70,6 +70,17 @@ export class ControlsSettings {
         );
     });
 
+    /** The selected audio track's label, for the chip; null without a choice. */
+    readonly audioLabel = computed(() => {
+        if (!this.groups().audio) {
+            return null;
+        }
+        return (
+            this.deps.state().audioTracks.find((track) => track.selected)
+                ?.label ?? null
+        );
+    });
+
     /** A track other than the first (the engine's default) is selected. */
     readonly audioModified = computed(() => {
         if (!this.groups().audio) {

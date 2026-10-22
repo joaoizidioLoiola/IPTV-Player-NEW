@@ -193,7 +193,11 @@ media controls.
   MPEG-TS stays on the progressive extractor.
 - **Audio/subtitle selection**: a track dialog is available through the
   on-screen button and the TV remote `MENU`/`INFO` key, overriding
-  `TrackSelectionParameters` per track type.
+  `TrackSelectionParameters` per track type. The button is hidden unless the
+  stream carries more than one audio track or at least one subtitle track.
+- **System Back** finishes `PlayerActivity` inside the app's task and reveals
+  the app; an open track dialog consumes the first Back. The activity is
+  started from the current `Activity`, never as a standalone task.
 - The Angular side routes Xtream and Stalker live channels to
   `NativePlayerService` when `RuntimeCapabilitiesService.supportsNativePlayer`
   is true (the shell registered the `NativePlayer` plugin). VOD and catch-up

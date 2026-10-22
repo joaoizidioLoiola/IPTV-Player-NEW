@@ -12,6 +12,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.KeyEvent;
+import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
@@ -25,6 +26,7 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.media3.common.C;
 import androidx.media3.common.Format;
+import androidx.media3.common.Player;
 import androidx.media3.common.TrackGroup;
 import androidx.media3.common.TrackSelectionOverride;
 import androidx.media3.common.TrackSelectionParameters;
@@ -55,6 +57,7 @@ public class PlayerActivity extends AppCompatActivity {
     private static final int POST_NOTIFICATIONS_REQUEST = 4101;
 
     private PlayerView playerView;
+    private ImageButton tracksButton;
     private ListenableFuture<MediaController> controllerFuture;
     @Nullable
     private MediaController controller;
@@ -103,10 +106,11 @@ public class PlayerActivity extends AppCompatActivity {
 
     private ImageButton createTracksButton() {
         ImageButton button = new ImageButton(this);
-        button.setImageResource(android.R.drawable.ic_menu_sort_by_size);
+        button.setImageResource(R.drawable.ic_tracks);
         button.setBackgroundColor(Color.TRANSPARENT);
-        button.setAlpha(0.75f);
+        button.setAlpha(0.85f);
         button.setContentDescription(getString(R.string.tracks_button_description));
+        button.setVisibility(View.GONE);
         FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
             dp(48),
             dp(48)
@@ -115,6 +119,7 @@ public class PlayerActivity extends AppCompatActivity {
         params.setMargins(0, dp(16), dp(16), 0);
         button.setLayoutParams(params);
         button.setOnClickListener(view -> showTrackSelection());
+        tracksButton = button;
         return button;
     }
 
@@ -164,6 +169,15 @@ public class PlayerActivity extends AppCompatActivity {
             () -> {
                 try {
                     controller = controllerFuture.get();
+                    controller.addListener(
+                        new Player.Listener() {
+                            @Override
+                            public void onTracksChanged(Tracks tracks) {
+                                updateTracksButton(tracks);
+                            }
+                        }
+                    );
+                    updateTracksButton(controller.getCurrentTracks());
                     playerView.setPlayer(controller);
                 } catch (Exception unavailableSession) {
                     finish();
@@ -183,6 +197,29 @@ public class PlayerActivity extends AppCompatActivity {
             return true;
         }
         return super.onKeyUp(keyCode, event);
+    }
+
+    private void updateTracksButton(Tracks tracks) {
+        if (tracksButton == null) {
+            return;
+        }
+        int audioTracks = 0;
+        int textTracks = 0;
+        for (Tracks.Group group : tracks.getGroups()) {
+            for (int index = 0; index < group.length; index++) {
+                if (!group.isTrackSupported(index)) {
+                    continue;
+                }
+                if (group.getType() == C.TRACK_TYPE_AUDIO) {
+                    audioTracks += 1;
+                } else if (group.getType() == C.TRACK_TYPE_TEXT) {
+                    textTracks += 1;
+                }
+            }
+        }
+        tracksButton.setVisibility(
+            audioTracks > 1 || textTracks > 0 ? View.VISIBLE : View.GONE
+        );
     }
 
     private void showTrackSelection() {

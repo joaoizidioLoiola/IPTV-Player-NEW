@@ -365,6 +365,32 @@
                 @if (
                     settings.available() && layout.roomy() && !settings.isOpen()
                 ) {
+                    @if (settings.groups().audio) {
+                        @let audioValue =
+                            settings.audioLabel() ??
+                            ('EMBEDDED_MPV.PLAYER.TRACK_DEFAULT' | translate);
+                        <button
+                            type="button"
+                            class="player-controls__chip"
+                            [class.player-controls__chip--modified]="
+                                settings.audioModified()
+                            "
+                            data-test-id="player-controls-audio-chip"
+                            (click)="settings.open('audio')"
+                            [attr.aria-label]="
+                                'EMBEDDED_MPV.PLAYER.AUDIO_TRACKS' | translate
+                            "
+                            [matTooltip]="
+                                'EMBEDDED_MPV.PLAYER.AUDIO_TRACKS' | translate
+                            "
+                            matTooltipPosition="above"
+                        >
+                            <mat-icon>translate</mat-icon>
+                            <span class="player-controls__chip-label">{{
+                                audioValue
+                            }}</span>
+                        </button>
+                    }
                     @if (settings.groups().subtitles) {
                         <!-- On with no track marked selected yet (the engine
                              can report the id before the list) reads "On",
@@ -434,6 +460,48 @@
                             }}</span>
                         </button>
                     }
+                }
+
+                @if (!layout.roomy() && settings.groups().audio) {
+                    <button
+                        mat-icon-button
+                        type="button"
+                        class="player-controls__button"
+                        data-test-id="player-controls-audio-button"
+                        (click)="settings.open('audio')"
+                        [attr.aria-label]="
+                            'EMBEDDED_MPV.PLAYER.AUDIO_TRACKS' | translate
+                        "
+                        [matTooltip]="
+                            'EMBEDDED_MPV.PLAYER.AUDIO_TRACKS' | translate
+                        "
+                        matTooltipPosition="above"
+                    >
+                        <mat-icon>translate</mat-icon>
+                    </button>
+                }
+
+                @if (!layout.roomy() && settings.groups().subtitles) {
+                    <button
+                        mat-icon-button
+                        type="button"
+                        class="player-controls__button"
+                        data-test-id="player-controls-subtitle-button"
+                        (click)="settings.open('subtitles')"
+                        [attr.aria-label]="
+                            'EMBEDDED_MPV.PLAYER.SUBTITLES' | translate
+                        "
+                        [matTooltip]="
+                            'EMBEDDED_MPV.PLAYER.SUBTITLES' | translate
+                        "
+                        matTooltipPosition="above"
+                    >
+                        <mat-icon>{{
+                            settings.subtitlesOn()
+                                ? 'closed_caption'
+                                : 'closed_caption_disabled'
+                        }}</mat-icon>
+                    </button>
                 }
 
                 @if (settings.available()) {

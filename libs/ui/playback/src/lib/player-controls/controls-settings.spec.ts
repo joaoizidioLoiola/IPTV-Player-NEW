@@ -113,6 +113,7 @@ describe('ControlsSettings', () => {
         expect(settings.dots()).toEqual({ cyan: false, violet: false });
         expect(settings.hasDots()).toBe(false);
         expect(settings.subtitleLabel()).toBeNull();
+        expect(settings.audioLabel()).toBe('English');
         expect(settings.speedLabel()).toBe('1×');
 
         setState({
@@ -132,6 +133,7 @@ describe('ControlsSettings', () => {
         });
         expect(settings.subtitlesOn()).toBe(true);
         expect(settings.subtitleLabel()).toBe('Russian');
+        expect(settings.audioLabel()).toBe('German');
         expect(settings.audioModified()).toBe(true);
         expect(settings.qualityModified()).toBe(true);
         expect(settings.speedModified()).toBe(true);
