@@ -503,7 +503,6 @@
         "SUPPORT_SPONSORS_HINT": "متكرر ولا مرة وحدة",
         "SUPPORT_KOFI_HINT": "شري ليا قهوة",
         "EPG_NOTE": "EPG متوفر حالياً غير فالإصدار المبني على Electron ديال IPTV Player NEW.",
-        "EPG_NOTE_URL_TEXT": "شوف هنا",
         "IMPORT_EXPORT_DATA": "استورد/صدّر قوائم التشغيل",
         "IMPORT_EXPORT_DATA_DESCRIPTION": "صدّر ولا رجّع نسخ احتياطية ديال لوائح التشغيل، بما فيها لقطات M3U ومعطيات اتصال Xtream/Stalker وحالة المستخدم وروابط مصادر EPG.",
         "IMPORT_DATA": "استورد",
@@ -2218,7 +2217,6 @@
         "INFO_DIALOG": {
             "PLAYING": "الفيديو خدام فنافذة المشغّل الخارجي.",
             "INSTALL_HINT": "تأكد بلي MPV ولا VLC مثبّت مزيان فالنظام ديالك.",
-            "INSTALL_INSTRUCTIONS": "تعليمات التثبيت",
             "DONT_SHOW_AGAIN": "ما توريهاش عاوتاني"
         }
     }

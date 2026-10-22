@@ -503,7 +503,6 @@
         "SUPPORT_SPONSORS_HINT": "Terugkerend of eenmalig",
         "SUPPORT_KOFI_HINT": "Trakteer me op een koffie",
         "EPG_NOTE": "EPG is momenteel alleen beschikbaar in de op Electron gebaseerde versie van IPTV Player NEW.",
-        "EPG_NOTE_URL_TEXT": "Hier controleren",
         "IMPORT_EXPORT_DATA": "Afspeellijsten importeren/exporteren",
         "IMPORT_EXPORT_DATA_DESCRIPTION": "Exporteer of herstel back-ups van afspeellijsten, inclusief M3U-momentopnamen, Xtream/Stalker-verbindingsmetadata, gebruikersstatus en URL's van EPG-bronnen.",
         "IMPORT_DATA": "Importeren",
@@ -2218,7 +2217,6 @@
         "INFO_DIALOG": {
             "PLAYING": "De video wordt afgespeeld in het venster van de externe speler.",
             "INSTALL_HINT": "Controleer of MPV of VLC correct op uw systeem is geïnstalleerd.",
-            "INSTALL_INSTRUCTIONS": "Installatie-instructies",
             "DONT_SHOW_AGAIN": "Niet meer tonen"
         }
     }

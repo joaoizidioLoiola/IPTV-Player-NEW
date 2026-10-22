@@ -4,6 +4,15 @@ import { StorageMap } from '@ngx-pwa/local-storage';
 import { catchError, map, Observable } from 'rxjs';
 import { STORE_KEY, Theme } from '@iptvnator/shared/interfaces';
 
+/**
+ * Legacy upstream releases feed for the browser/PWA update check. Only the
+ * self-hosted PWA path calls it (`SettingsAppUpdateFacade.checkAppVersion`
+ * returns early on Electron); it says nothing about this fork's own
+ * versions and stays until a fork-owned release feed exists.
+ */
+const LEGACY_UPSTREAM_RELEASES_API_URL =
+    'https://api.github.com/repos/4gray/iptvnator/releases';
+
 const PRERELEASE_KEYWORDS = [
     'beta',
     'alpha',
@@ -178,9 +187,9 @@ export class SettingsService {
      */
     getAppVersion() {
         return this.http
-            .get<
-                { created_at: string; name: string }[]
-            >('https://api.github.com/repos/4gray/iptvnator/releases')
+            .get<{ created_at: string; name: string }[]>(
+                LEGACY_UPSTREAM_RELEASES_API_URL
+            )
             .pipe(
                 map((response) => {
                     // Filter out pre-release versions (beta, alpha, rc, etc.)

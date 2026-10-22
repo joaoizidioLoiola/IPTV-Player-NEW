@@ -503,7 +503,6 @@
         "SUPPORT_SPONSORS_HINT": "متكرر أو لمرة واحدة",
         "SUPPORT_KOFI_HINT": "اشتري لي قهوة",
         "EPG_NOTE": "يتوفر EPG حاليًا فقط في إصدار سطح المكتب Electron من IPTV Player NEW.",
-        "EPG_NOTE_URL_TEXT": "تحقق من ذلك هنا",
         "IMPORT_EXPORT_DATA": "استيراد/تصدير نسخ احتياطية لقوائم التشغيل",
         "IMPORT_EXPORT_DATA_DESCRIPTION": "صدّر أو استعد نسخًا احتياطية لقوائم التشغيل تشمل لقطات M3U وبيانات اتصال Xtream/Stalker وحالة المستخدم وروابط مصادر EPG.",
         "IMPORT_DATA": "استيراد",
@@ -2218,7 +2217,6 @@
         "INFO_DIALOG": {
             "PLAYING": "يتم تشغيل الفيديو في نافذة المشغل الخارجي.",
             "INSTALL_HINT": "تأكد من تثبيت MPV أو VLC بشكل صحيح على نظامك.",
-            "INSTALL_INSTRUCTIONS": "تعليمات التثبيت",
             "DONT_SHOW_AGAIN": "عدم الإظهار مرة أخرى"
         }
     }

@@ -503,7 +503,6 @@
         "SUPPORT_SPONSORS_HINT": "定期或一次性",
         "SUPPORT_KOFI_HINT": "请我喝杯咖啡",
         "EPG_NOTE": "目前 EPG 仅在 IPTV Player NEW 的 Electron 桌面版本中可用。",
-        "EPG_NOTE_URL_TEXT": "在此查看",
         "IMPORT_EXPORT_DATA": "导入/导出播放列表",
         "IMPORT_EXPORT_DATA_DESCRIPTION": "导出或恢复播放列表备份，包括 M3U 快照、Xtream/Stalker 连接元数据、用户状态和 EPG 源 URL。",
         "IMPORT_DATA": "导入",
@@ -2218,7 +2217,6 @@
         "INFO_DIALOG": {
             "PLAYING": "视频正在外部播放器窗口中播放。",
             "INSTALL_HINT": "请确保您的系统上已正确安装 MPV 或 VLC。",
-            "INSTALL_INSTRUCTIONS": "安装说明",
             "DONT_SHOW_AGAIN": "不再显示"
         }
     }

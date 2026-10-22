@@ -503,7 +503,6 @@
         "SUPPORT_SPONSORS_HINT": "Recurrente o única vez",
         "SUPPORT_KOFI_HINT": "Invítame un café",
         "EPG_NOTE": "Actualmente, la EPG solo está disponible en la versión de IPTV Player NEW basada en Electron.",
-        "EPG_NOTE_URL_TEXT": "Compruébalo aquí",
         "IMPORT_EXPORT_DATA": "Importar/exportar copias de seguridad",
         "IMPORT_EXPORT_DATA_DESCRIPTION": "Exporta o restaura copias de seguridad de listas, incluidas instantáneas M3U, metadatos de conexión Xtream/Stalker, estado del usuario y URL de orígenes EPG.",
         "IMPORT_DATA": "Importar",
@@ -2218,7 +2217,6 @@
         "INFO_DIALOG": {
             "PLAYING": "El vídeo se está reproduciendo en la ventana del reproductor externo.",
             "INSTALL_HINT": "Asegúrate de que MPV o VLC esté instalado correctamente en tu sistema.",
-            "INSTALL_INSTRUCTIONS": "Instrucciones de instalación",
             "DONT_SHOW_AGAIN": "No volver a mostrar"
         }
     }

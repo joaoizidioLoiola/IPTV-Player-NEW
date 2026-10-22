@@ -503,7 +503,6 @@
         "SUPPORT_SPONSORS_HINT": "Rendszeres vagy egyszeri támogatás",
         "SUPPORT_KOFI_HINT": "Hívjon meg egy kávéra",
         "EPG_NOTE": "Az EPG jelenleg csak az IPTV Player NEW Electron-alapú változatában érhető el.",
-        "EPG_NOTE_URL_TEXT": "Itt ellenőrizheti",
         "IMPORT_EXPORT_DATA": "Lejátszási listák biztonsági mentéseinek importálása és exportálása",
         "IMPORT_EXPORT_DATA_DESCRIPTION": "Lejátszási lista biztonsági mentéseinek exportálása vagy visszaállítása, beleértve az M3U-pillanatképeket, az Xtream/Stalker-kapcsolati metaadatokat, a felhasználói állapotot és az EPG-források URL-címeit.",
         "IMPORT_DATA": "Importálás",
@@ -2218,7 +2217,6 @@
         "INFO_DIALOG": {
             "PLAYING": "A videó lejátszása a külső lejátszó ablakában történik.",
             "INSTALL_HINT": "Ellenőrizze, hogy az MPV vagy a VLC megfelelően telepítve van-e a rendszerén.",
-            "INSTALL_INSTRUCTIONS": "Telepítési útmutató",
             "DONT_SHOW_AGAIN": "Ne jelenjen meg újra"
         }
     }

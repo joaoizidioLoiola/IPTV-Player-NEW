@@ -503,7 +503,6 @@
         "SUPPORT_SPONSORS_HINT": "Перыядычна або разава",
         "SUPPORT_KOFI_HINT": "Купіце мне каву",
         "EPG_NOTE": "Зараз EPG даступны толькі ў Electron-версіі IPTV Player NEW для працоўнага стала.",
-        "EPG_NOTE_URL_TEXT": "Праверыць тут",
         "IMPORT_EXPORT_DATA": "Імпарт/экспарт рэзервовых копій плэйлістоў",
         "IMPORT_EXPORT_DATA_DESCRIPTION": "Экспартуйце або аднаўляйце рэзервовыя копіі плэйлістоў, уключаючы здымкі M3U, метаданыя падключэння Xtream/Stalker, стан карыстальніка і URL крыніц EPG.",
         "IMPORT_DATA": "Імпартаваць",
@@ -2218,7 +2217,6 @@
         "INFO_DIALOG": {
             "PLAYING": "Відэа прайграецца ў акне знешняга плэера.",
             "INSTALL_HINT": "Пераканайцеся, што MPV або VLC правільна ўсталяваны ў вашай сістэме.",
-            "INSTALL_INSTRUCTIONS": "Інструкцыі па ўсталяванні",
             "DONT_SHOW_AGAIN": "Больш не паказваць"
         }
     }

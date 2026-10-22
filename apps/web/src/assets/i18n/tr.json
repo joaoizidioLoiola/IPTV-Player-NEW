@@ -503,7 +503,6 @@
         "SUPPORT_SPONSORS_HINT": "Yinelenen veya tek seferlik",
         "SUPPORT_KOFI_HINT": "Bana bir kahve ısmarla",
         "EPG_NOTE": "EPG şu anda yalnızca IPTV Player NEW’ın Electron tabanlı sürümünde kullanılabilir.",
-        "EPG_NOTE_URL_TEXT": "Buradan kontrol edin",
         "IMPORT_EXPORT_DATA": "Oynatma listelerini içe/dışa aktar",
         "IMPORT_EXPORT_DATA_DESCRIPTION": "M3U anlık görüntüleri, Xtream/Stalker bağlantı meta verileri, kullanıcı durumu ve EPG kaynak URL’leri dahil oynatma listesi yedeklerini dışa aktarın veya geri yükleyin.",
         "IMPORT_DATA": "İçe aktar",
@@ -2218,7 +2217,6 @@
         "INFO_DIALOG": {
             "PLAYING": "Video harici oynatıcı penceresinde oynatılıyor.",
             "INSTALL_HINT": "MPV veya VLC’nin sisteminizde doğru şekilde kurulu olduğundan emin olun.",
-            "INSTALL_INSTRUCTIONS": "Kurulum talimatları",
             "DONT_SHOW_AGAIN": "Bir daha gösterme"
         }
     }
