@@ -1,0 +1,5 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="webview_update_required_title">O Android System WebView está desatualizado</string>
+    <string name="webview_update_required_message">O IPTV Player NEW precisa do Chromium %1$d ou mais recente, e este aparelho tem o Chromium %2$d. Atualize o \"Android System WebView\" na Play Store ou na loja do seu aparelho e abra o IPTV Player NEW novamente.</string>
+</resources>

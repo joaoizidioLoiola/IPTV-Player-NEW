@@ -1,5 +1,12 @@
 import { Injectable } from '@angular/core';
+import type { AndroidRuntimeInfo } from '@iptvnator/shared/interfaces';
 import { ElectronBridgeApi } from '@iptvnator/shared/interfaces';
+import {
+    detectAndroidRuntime,
+    isAndroidWebViewUpdateRequiredFrom,
+    loadNativeAndroidRuntimeInfo,
+    readWindowCapacitorGlobal,
+} from './android-runtime';
 
 export type RuntimeEnvironment = 'electron' | 'pwa';
 
@@ -23,6 +30,8 @@ const playbackPositionStorageMethods = [
 
 @Injectable({ providedIn: 'root' })
 export class RuntimeCapabilitiesService {
+    private androidRuntimeState: AndroidRuntimeInfo | undefined;
+
     get environment(): RuntimeEnvironment {
         return this.isElectron ? 'electron' : 'pwa';
     }
@@ -33,6 +42,78 @@ export class RuntimeCapabilitiesService {
 
     get isPwa(): boolean {
         return !this.isElectron;
+    }
+
+    /**
+     * Android shell facts, detected once. The Electron bridge answer is not
+     * consulted: Electron never runs on Android, and the Capacitor shell
+     * carries no Electron bridge — the renderer reads `window.Capacitor`
+     * directly (`android-runtime.ts`).
+     */
+    private get androidRuntime(): ReturnType<typeof detectAndroidRuntime> {
+        if (this.androidRuntimeState === undefined) {
+            this.androidRuntimeState = detectAndroidRuntime({
+                capacitorGlobal: readWindowCapacitorGlobal(),
+                userAgent: navigator?.userAgent,
+            });
+        }
+        return this.androidRuntimeState;
+    }
+
+    /** True inside any native Capacitor shell (positive capability). */
+    get isNativeShell(): boolean {
+        return this.androidRuntime.isNativeShell;
+    }
+
+    /** True only inside the Capacitor Android shell (positive capability). */
+    get isAndroid(): boolean {
+        return this.androidRuntime.isAndroid;
+    }
+
+    /**
+     * Always false in phase 1: no WebView API can read `UiModeManager`, so
+     * the value must come from the native TV bridge plugin (phase 3). Never
+     * treat `false` as "phone" for D-pad decisions — see AndroidRuntimeInfo.
+     */
+    get isAndroidTv(): boolean {
+        return this.androidRuntime.isAndroidTv;
+    }
+
+    /**
+     * False until the phase 2 Media3 plugin ships: the WebView `<video>`
+     * element cannot play MPEG-TS/RTSP/UDP linear streams, so native
+     * playback must not be claimed before the plugin is registered.
+     */
+    get supportsNativePlayer(): boolean {
+        return false;
+    }
+
+    /** WebView floor gate (phase 1 detection; the phase 3 screen consumes it). */
+    get androidWebViewUpdateRequired(): boolean {
+        return isAndroidWebViewUpdateRequiredFrom({
+            capacitorGlobal: readWindowCapacitorGlobal(),
+            userAgent: navigator?.userAgent,
+        });
+    }
+
+    /**
+     * Asks the Android shell for facts the WebView cannot read and folds them
+     * into the cached detection (`UiModeManager` today). Outside the native
+     * shell, without the plugin, or on a malformed answer, the conservative
+     * phase-1 defaults stay in place. Idempotent: safe to call at boot and
+     * again when a TV screen mounts.
+     */
+    async loadNativeRuntimeInfo(): Promise<AndroidRuntimeInfo> {
+        const nativeInfo = await loadNativeAndroidRuntimeInfo(
+            readWindowCapacitorGlobal()
+        );
+        if (nativeInfo) {
+            this.androidRuntimeState = {
+                ...this.androidRuntime,
+                ...nativeInfo,
+            };
+        }
+        return this.androidRuntime;
     }
 
     get platform(): string | undefined {

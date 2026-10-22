@@ -4,4 +4,7 @@
     <string name="title_activity_main">IPTV Player NEW</string>
     <string name="package_name">com.iptvplayernew.desktop</string>
     <string name="custom_url_scheme">com.iptvplayernew.desktop</string>
+
+    <string name="webview_update_required_title">Android System WebView is out of date</string>
+    <string name="webview_update_required_message">IPTV Player NEW needs Chromium %1$d or newer, and this device has Chromium %2$d. Update \"Android System WebView\" in the Play Store or in your app store, then open IPTV Player NEW again.</string>
 </resources>

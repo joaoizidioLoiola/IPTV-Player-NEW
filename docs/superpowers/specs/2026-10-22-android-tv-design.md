@@ -210,6 +210,39 @@ WebView the protocol is `https:` on `localhost`, so **the service worker would
 register and serve stale chunks inside the APK**. This must be fixed in the
 Android runtime, not left to happen.
 
+### 4.3 Developer verification in Brazil
+
+**[FATO]** The 2026-09-30 enforcement wave covers installs **from the seven
+participating stores** (Play, HONOR, OPPO, Samsung, Transsion, vivo, Xiaomi) in
+Brazil, Indonesia, Singapore and Thailand, on certified Android 7+ devices.
+Google's FAQ states that installs from other stores and direct sideloads "won't
+apply to your app yet"; the 2027 global phase extends the check to all install
+sources, including downloaded APK files
+(https://developer.android.com/developer-verification/guides/faq,
+https://developer.android.com/developer-verification/guides, updated 2026-09-30).
+
+**[FATO]** Verification has two independent gates: **identity** (individual CPF
+or organization CNPJ, tied to a Google Payments profile whose legal name and
+address match the documents) and **package registration** (applicationId plus
+the SHA-256 of the signing certificate). No manifest attribute or permission
+declares it; the on-device Android Developer Verifier checks package name and
+signer certificate against Google's registry
+(https://developer.android.com/developer-verification/guides).
+
+**[RECOMENDAÇÃO]** Register now, not at launch: the organization path requires a
+**D-U-N-S number (28–30 days)** and a website verified in Google Search Console.
+A Play Console organization account is the single place to verify identity and
+to register packages distributed outside Play; the Android Developer Console is
+only for developers who distribute exclusively off-Play. Both cost US$25.
+Registration is package + certificate based, so the **self-managed release key
+is the identity credential**: register every certificate actually shipped and
+back it up (https://developer.android.com/developer-verification/guides/google-play-console).
+
+**[FATO]** ADB installs are exempt, and a failed check blocks install/update but
+never removes an existing install; the user can still proceed through the
+advanced flow (Developer options, 24-hour wait, biometric confirmation)
+(https://developer.android.com/developer-verification/guides/faq).
+
 ---
 
 ## 5. TV interface

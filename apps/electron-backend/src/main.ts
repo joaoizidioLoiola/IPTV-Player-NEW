@@ -12,6 +12,7 @@ import {
     traceStartupPhase,
 } from './app/services/debug-trace';
 import { registerPerformanceCountersHandler } from './app/services/performance-counters';
+import { registerAndroidRuntimeInfoHandler } from './app/services/android-runtime';
 import { countMainProcessSqlStatements } from './app/services/main-sql-statement-count';
 import { readCompileCacheOutcome } from './app/services/compile-cache';
 import { applyElectronNetworkDefaults } from './app/util/network-defaults';
@@ -122,6 +123,9 @@ export default class Main {
             performanceCounters,
             isPerformanceCaptureEnabled()
         );
+
+        // Pre-paint: the renderer may consult the shell facts at boot.
+        registerAndroidRuntimeInfoHandler(ipcMain);
 
         const windowCloseGuard = bootstrapWindowCloseGuard((listener) =>
             App.onMainWindowCreated(listener)

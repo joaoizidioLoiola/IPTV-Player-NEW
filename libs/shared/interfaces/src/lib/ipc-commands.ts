@@ -125,6 +125,12 @@ export const CREDENTIAL_STORE_IS_AVAILABLE = 'CREDENTIAL_STORE:IS_AVAILABLE';
 export const SETTINGS_UPDATE = 'SETTINGS_UPDATE';
 export const DELETE_ALL_PLAYLISTS = 'DELETE_ALL_PLAYLISTS';
 
+// Native shell runtime info: the renderer asks once at boot for the facts
+// only the main process knows (see AndroidRuntimeInfo). The Electron
+// desktop answer is always non-Android; the Android Capacitor shell does
+// not route through this channel and detects itself via window.Capacitor.
+export const ANDROID_RUNTIME_GET_INFO = 'ANDROID_RUNTIME:GET_INFO';
+
 // Remote Control
 export const REMOTE_CONTROL_CHANGE_CHANNEL = 'REMOTE_CONTROL_CHANGE_CHANNEL';
 

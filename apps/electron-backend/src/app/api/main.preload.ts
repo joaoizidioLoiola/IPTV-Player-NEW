@@ -19,6 +19,7 @@ import {
     CREDENTIAL_STORE_IS_AVAILABLE,
     CREDENTIAL_STORE_SET,
     OPEN_FILE,
+    ANDROID_RUNTIME_GET_INFO,
     WINDOW_BACK_REQUESTED,
     WINDOW_GET_ZOOM_LEVEL,
     WINDOW_ZOOM_LEVEL_APPLIED,
@@ -417,6 +418,9 @@ const electronApi: ElectronBridgeApi = {
         dbSaveContentProgressListeners.clear();
     },
     getAppVersion: () => ipcRenderer.invoke('get-app-version'),
+    // See AndroidRuntimeInfo on the bridge contract; the desktop answer is
+    // always a non-Android shell (buildAndroidRuntimeInfo).
+    androidRuntimeInfo: () => ipcRenderer.invoke(ANDROID_RUNTIME_GET_INFO),
     platform: process.platform,
     getAppUpdateStatus: () => ipcRenderer.invoke(APP_UPDATE_GET_STATUS),
     checkForAppUpdate: () => ipcRenderer.invoke(APP_UPDATE_CHECK),

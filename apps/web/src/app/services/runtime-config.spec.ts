@@ -74,4 +74,55 @@ describe('runtime config helpers', () => {
             )
         ).toBe(false);
     });
+
+    it('disables service worker inside the native Capacitor shell on its https localhost origin', () => {
+        expect(
+            shouldEnableServiceWorker(
+                true,
+                { serviceWorker: {} } as Navigator,
+                {
+                    capacitorBridge: { isNativePlatform: () => true },
+                    protocol: 'https:',
+                }
+            )
+        ).toBe(false);
+    });
+
+    it('disables service worker for a native shell detected through getPlatform', () => {
+        expect(
+            shouldEnableServiceWorker(
+                true,
+                { serviceWorker: {} } as Navigator,
+                {
+                    capacitorBridge: { getPlatform: () => 'android' },
+                    protocol: 'https:',
+                }
+            )
+        ).toBe(false);
+    });
+
+    it('keeps the service worker enabled for a real https PWA load', () => {
+        expect(
+            shouldEnableServiceWorker(
+                true,
+                { serviceWorker: {} } as Navigator,
+                {
+                    protocol: 'https:',
+                }
+            )
+        ).toBe(true);
+    });
+
+    it('does not treat the web Capacitor global (non-native) as a native shell', () => {
+        expect(
+            shouldEnableServiceWorker(
+                true,
+                { serviceWorker: {} } as Navigator,
+                {
+                    capacitorBridge: { isNativePlatform: () => false },
+                    protocol: 'https:',
+                }
+            )
+        ).toBe(true);
+    });
 });

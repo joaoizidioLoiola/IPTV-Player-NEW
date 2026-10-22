@@ -1,4 +1,5 @@
 import type { AppUpdateChannel } from './app-update-channel.util';
+import type { AndroidRuntimeInfo } from './android-runtime-info';
 import type { SourceProbeContext, SourceHealthResult } from './source-health';
 import type { PortalRequestFailureEnvelope } from './portal-request-failure.util';
 import type { XtreamConnectionFailure } from './xtream-connection-test';
@@ -783,6 +784,15 @@ export interface ElectronRecordingItem {
 }
 
 export interface ElectronBridgeApi {
+    /**
+     * Runtime facts about a native shell around this bundle. On the Electron
+     * desktop build Electron never runs on Android, so this reports
+     * `isNativeShell: false` with the bundled Chromium version; the Android
+     * Capacitor shell has no Electron bridge and is detected in the renderer
+     * through `window.Capacitor` (`android-runtime.ts` in libs/services).
+     * Optional because older preload builds do not ship it.
+     */
+    androidRuntimeInfo?: () => Promise<AndroidRuntimeInfo>;
     onPortalDebugEvent?: (
         callback: (data: PortalDebugEvent) => void
     ) => () => void;

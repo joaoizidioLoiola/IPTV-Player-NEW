@@ -652,7 +652,96 @@ describe('RuntimeCapabilitiesService', () => {
         expect(service.supportsXtreamSqliteDataSource).toBe(true);
         expect(service.supportsXtreamSectionNavigation).toBe(true);
     });
+
+    it('reports no Android shell capabilities for a plain browser PWA load', () => {
+        setWindowCapacitor(undefined);
+
+        const service = new RuntimeCapabilitiesService();
+
+        expect(service.isNativeShell).toBe(false);
+        expect(service.isAndroid).toBe(false);
+        expect(service.isAndroidTv).toBe(false);
+        expect(service.isPwa).toBe(true);
+        expect(service.supportsNativePlayer).toBe(false);
+        expect(service.androidWebViewUpdateRequired).toBe(false);
+    });
+
+    it('reports positive Android capabilities inside the Capacitor shell', () => {
+        setWindowCapacitor({
+            isNativePlatform: () => true,
+            getPlatform: () => 'android',
+        });
+
+        const service = new RuntimeCapabilitiesService();
+
+        expect(service.isNativeShell).toBe(true);
+        expect(service.isAndroid).toBe(true);
+        // Still PWA-branched by inheritance: without window.electron the
+        // Electron-only features degrade on their own; Android adds these
+        // positive capabilities on top, it does not change the branch.
+        expect(service.isPwa).toBe(true);
+        expect(service.environment).toBe('pwa');
+    });
+
+    it('keeps isAndroidTv false until the native TV bridge plugin reports UiModeManager', () => {
+        setWindowCapacitor({
+            isNativePlatform: () => true,
+            getPlatform: () => 'android',
+        });
+
+        const service = new RuntimeCapabilitiesService();
+
+        expect(service.isAndroidTv).toBe(false);
+    });
+
+    it('does not claim native playback before the phase 2 Media3 plugin', () => {
+        setWindowCapacitor({
+            isNativePlatform: () => true,
+            getPlatform: () => 'android',
+        });
+
+        const service = new RuntimeCapabilitiesService();
+
+        expect(service.supportsNativePlayer).toBe(false);
+    });
+
+    it('requires a WebView update only when the user agent names an old Chromium', () => {
+        setWindowCapacitor({
+            isNativePlatform: () => true,
+            getPlatform: () => 'android',
+        });
+
+        // Each check uses a fresh service: the Android facts are cached per
+        // instance at first access, so a UA swap after the first read would
+        // not be observed on the same instance.
+        expect(new RuntimeCapabilitiesService().androidWebViewUpdateRequired).toBe(
+            false
+        );
+
+        setWindowUserAgent('…Chrome/89.0.0.0 Mobile Safari/537.36');
+        expect(new RuntimeCapabilitiesService().androidWebViewUpdateRequired).toBe(
+            true
+        );
+
+        setWindowUserAgent('…Chrome/121.0.0.0 Mobile Safari/537.36');
+        expect(new RuntimeCapabilitiesService().androidWebViewUpdateRequired).toBe(
+            false
+        );
+    });
 });
+
+function setWindowCapacitor(value: unknown): void {
+    (window as unknown as { Capacitor?: unknown }).Capacitor = value;
+}
+
+function setWindowUserAgent(value: string): void {
+    // defineProperty avoids a spy that has to be restored between the calls in
+    // the same test (the Android facts are cached per service instance).
+    Object.defineProperty(window.navigator, 'userAgent', {
+        configurable: true,
+        value,
+    });
+}
 
 function createPlaylistStorageBridge(): Record<string, jest.Mock> {
     return {
