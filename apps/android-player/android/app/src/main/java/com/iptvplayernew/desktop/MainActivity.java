@@ -6,6 +6,7 @@ import android.graphics.Typeface;
 import android.os.Bundle;
 import android.util.TypedValue;
 import android.view.Gravity;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -40,6 +41,16 @@ public class MainActivity extends BridgeActivity {
         }
 
         super.load();
+
+        // IPTV panels are frequently served over plain HTTP, while the app
+        // origin is https://localhost (Capacitor default). Without this the
+        // WebView blocks every stream as mixed content, which surfaces as a
+        // "network-error" at the player loader. Media3 (Phase 2) will take over
+        // playback natively; this keeps the web player usable in the meantime.
+        if (getBridge() != null && getBridge().getWebView() != null) {
+            getBridge().getWebView().getSettings()
+                .setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
+        }
     }
 
     /** Major Chromium version of the installed WebView, or -1 if unknown. */
