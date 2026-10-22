@@ -91,6 +91,16 @@ Thumbs.db
 # Native Electron addons
 apps/electron-backend/native/build/
 apps/electron-backend/src/app/options/electron-builder.metadata.generated.json
+
+# Android (Capacitor shell) build outputs — the android/ platform sources are versioned
+apps/android-player/android/.gradle
+apps/android-player/android/app/build
+apps/android-player/android/build
+apps/android-player/android/local.properties
+apps/android-player/android/.idea
+
+# Local phase-0 Android validation artifacts (screenshots, logs) — never commit
+.artifacts/
 vendor/embedded-mpv/*/bin/
 vendor/embedded-mpv/*/include/
 vendor/embedded-mpv/*/lib/

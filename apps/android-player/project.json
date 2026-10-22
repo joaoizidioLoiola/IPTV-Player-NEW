@@ -1,0 +1,56 @@
+{
+    "name": "android-player",
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "projectType": "application",
+    "prefix": "app",
+    "sourceRoot": "apps/android-player/src",
+    "tags": ["scope:android", "domain:mobile", "type:app"],
+    "implicitDependencies": ["web"],
+    "targets": {
+        "build": {
+            "executor": "nx:run-commands",
+            "outputs": [
+                "{workspaceRoot}/dist/apps/web",
+                "{workspaceRoot}/apps/android-player/android/app/build/outputs/apk/debug/app-debug.apk"
+            ],
+            "options": {
+                "commands": [
+                    "pnpm nx build web --configuration=pwa",
+                    "pnpm nx run android-player:sync",
+                    "pnpm nx run android-player:assemble-debug"
+                ],
+                "parallel": false
+            }
+        },
+        "sync": {
+            "executor": "nx:run-commands",
+            "options": {
+                "cwd": "apps/android-player",
+                "command": "pnpm exec cap sync android"
+            }
+        },
+        "assemble-debug": {
+            "executor": "nx:run-commands",
+            "outputs": [
+                "{workspaceRoot}/apps/android-player/android/app/build/outputs/apk/debug/app-debug.apk"
+            ],
+            "options": {
+                "cwd": "apps/android-player/android",
+                "command": "gradlew.bat assembleDebug"
+            }
+        },
+        "open": {
+            "executor": "nx:run-commands",
+            "options": {
+                "cwd": "apps/android-player",
+                "command": "pnpm exec cap open android"
+            }
+        },
+        "lint": {
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "pnpm exec eslint --ignore-pattern \"apps/android-player/android/**\" apps/android-player"
+            }
+        }
+    }
+}
