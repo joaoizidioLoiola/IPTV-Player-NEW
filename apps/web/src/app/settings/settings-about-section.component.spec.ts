@@ -146,6 +146,23 @@ describe('SettingsAboutSectionComponent app updates', () => {
         );
         expect(getButton(fixture, 'app-update-open-release')).toBeTruthy();
     });
+
+    it('hides release notes and manual release actions without a configured feed', () => {
+        // This fork has no update feed: the backend reports an empty manual
+        // URL and no self-update, so both dead actions stay hidden instead
+        // of falling back to an upstream link.
+        configureComponent(fixture, {
+            currentVersion: '0.22.0',
+            manualDownloadUrl: '',
+            status: ELECTRON_BRIDGE_APP_UPDATE_STATUSES.Unsupported,
+            supportedSelfUpdate: false,
+            channel: 'stable',
+            installedChannel: 'stable',
+        });
+
+        expect(getButton(fixture, 'app-update-release-notes')).toBeNull();
+        expect(getButton(fixture, 'app-update-open-release')).toBeNull();
+    });
 });
 
 describe('SettingsAboutSectionComponent version display', () => {

@@ -237,19 +237,35 @@ export class SettingsAboutSectionComponent {
         );
     });
 
+    /**
+     * Release notes are a release-feed feature: without a configured feed
+     * (this fork has none, so `supportedSelfUpdate` is false and the manual
+     * URL is empty) the dialog can only end in an upstream error, so the
+     * "What's new" entry point stays hidden.
+     */
     readonly canOpenAppUpdateReleaseNotes = computed(() => {
         const status = this.appUpdateStatus();
 
         return Boolean(
             status?.currentVersion &&
-            status.status !== ELECTRON_BRIDGE_APP_UPDATE_STATUSES.Checking
+            status.status !== ELECTRON_BRIDGE_APP_UPDATE_STATUSES.Checking &&
+            (status.supportedSelfUpdate || status.manualDownloadUrl)
         );
     });
 
+    /**
+     * The manual download link must point somewhere the fork owns; when the
+     * backend reports no feed it sends an empty URL and opening it would be
+     * a dead action, so the button disappears with it.
+     */
     readonly canOpenManualAppUpdate = computed(() => {
         const status = this.appUpdateStatus();
 
-        return Boolean(status && !status.supportedSelfUpdate);
+        return Boolean(
+            status &&
+                !status.supportedSelfUpdate &&
+                status.manualDownloadUrl
+        );
     });
 
     readonly appUpdateStatusLabelKey = computed(() => {

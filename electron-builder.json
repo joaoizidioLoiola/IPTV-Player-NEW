@@ -1,6 +1,7 @@
 {
     "appId": "com.iptvplayernew.desktop",
     "productName": "IPTV Player NEW",
+    "copyright": "Copyright © 2026 IPTV Player NEW",
     "artifactName": "${name}-${version}-${os}-${arch}.${ext}",
     "fileAssociations": [
         {

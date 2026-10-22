@@ -141,8 +141,21 @@ export class SettingsAppUpdateFacade {
      * Checks whether the latest version of the application
      * is used and updates the version message in the
      * settings UI
+     *
+     * Electron runs are skipped entirely: opening Settings must not hit
+     * `api.github.com` (the endpoint is the upstream IPTVnator feed, so the
+     * comparison would say nothing about this fork, and the desktop verdict
+     * comes from the electron-updater bridge instead — see `loadStatus` and
+     * `checkForAppUpdate`). The remaining browser/PWA path keeps the legacy
+     * check for self-hosted web deployments, which report their own update
+     * stream; the HTTP GET below stays a documented legacy upstream call
+     * until a fork feed exists.
      */
     checkAppVersion(): void {
+        if (this.runtime.isElectron) {
+            return;
+        }
+
         this.settingsService
             .getAppVersion()
             .pipe(take(1))

@@ -234,10 +234,14 @@ artwork stay in the app language; both language rows land in the cache.
 Trailers embed via `https://www.youtube-nocookie.com/embed/…`. YouTube
 requires a Referer on the embed request ("Error 153 — Video player
 configuration error" without one); the packaged Electron app loads from
-`file://`, which never sends one, so the Electron main process injects the
-project site as Referer for YouTube embed hosts
+`file://`, which never sends one, so the Electron main process injects a
+Referer for YouTube embed hosts only, and only on `/embed/` paths
 (`request-header-overrides.service.ts`, registered at startup via
-`registerStaticHeaderShims`). Dev builds (localhost origin) are unaffected.
+`registerStaticHeaderShims`). The value is the product's own first-party
+placeholder (`YOUTUBE_EMBED_REFERER`); it is not the upstream project's
+site, so the fork does not attribute trailer traffic to upstream. Replace
+it with the product's real domain once the fork has a website. Dev builds
+(localhost origin) are unaffected.
 
 ## Season/Episode Enrichment
 

@@ -26,16 +26,25 @@ const headerOverrideUrlFilter = {
 
 /**
  * YouTube refuses to configure the embedded player when the /embed request
- * carries no Referer ("Error 153 — Video player configuration error").
- * The packaged app loads the renderer from file://, which never sends a
- * Referer, so trailer iframes break in production while working in dev
- * (localhost origin). Injecting the project site as Referer restores them.
+ * carries no Referer ("Error 153 — Video player configuration error"). The
+ * packaged app loads the renderer from file://, which never sends a Referer,
+ * so TMDB trailer iframes break in production while working in dev (localhost
+ * origin).
+ *
+ * This fork re-injects a Referer for YouTube embed requests only, using a
+ * neutral first-party placeholder instead of the upstream project's site
+ * (4gray.github.io) so the fork does not attribute trailer traffic to
+ * upstream. Replace YOUTUBE_EMBED_REFERER with the product's real domain
+ * once the fork has its own website.
  */
 const YOUTUBE_EMBED_HOSTS = new Set([
-    'www.youtube-nocookie.com',
+    'youtube.com',
     'www.youtube.com',
+    'youtube-nocookie.com',
+    'www.youtube-nocookie.com',
 ]);
-const YOUTUBE_EMBED_REFERER = 'https://4gray.github.io/iptvnator/';
+/** Neutral first-party placeholder — NOT the upstream site; see above. */
+const YOUTUBE_EMBED_REFERER = 'https://iptv-player.local/';
 
 let activeHeaderOverride: HeaderOverride | null = null;
 let activeScopedHeaderOverride: HeaderOverride | null = null;
@@ -107,8 +116,8 @@ function applyYoutubeEmbedRefererShim(
     } catch {
         return;
     }
-    // Scope strictly to embed player requests — www.youtube.com also
-    // serves regular pages that must keep their real (missing) Referer
+    // Scope strictly to embed player requests — youtube.com also serves
+    // regular pages that must keep their real (missing) Referer.
     if (
         !YOUTUBE_EMBED_HOSTS.has(parsed.hostname) ||
         !parsed.pathname.startsWith('/embed/')
@@ -116,6 +125,7 @@ function applyYoutubeEmbedRefererShim(
         return;
     }
 
+    // Never overwrite an existing Referer (case-insensitive).
     const hasReferer = Object.keys(requestHeaders).some(
         (name) => name.toLowerCase() === 'referer'
     );
@@ -257,6 +267,9 @@ export function configureRequestHeaderOverride(
 /**
  * Registers the header listener at startup so the YouTube embed Referer
  * shim is active even before any playlist-level override is configured.
+ * The shim injects only a neutral first-party Referer on /embed/ requests
+ * (see the module comment); playlist/channel overrides still register
+ * their listener lazily through `configureRequestHeaderOverride`.
  */
 export function registerStaticHeaderShims(): void {
     ensureHeaderOverrideListener();

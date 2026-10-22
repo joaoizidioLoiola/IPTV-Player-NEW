@@ -22,8 +22,6 @@ import { DomSanitizer } from '@angular/platform-browser';
 import { TranslatePipe } from '@ngx-translate/core';
 import { marked } from 'marked';
 import {
-    appUpdateReleasesListUrl,
-    appVersionChannel,
     ElectronBridgeAppUpdateReleaseNotes,
     ElectronBridgeAppUpdateReleaseNotesDirection,
     ElectronBridgeAppUpdateReleaseNotesRequest,
@@ -177,35 +175,30 @@ function decorateReleaseNotesHtml(html: string): string {
                     ></article>
                 }
             </div>
-            <!-- The link to GitHub is a third action at the footer's start. The
-             error is checked first: a failed Previous/Next keeps the earlier
-             notes for navigation, but the body shows the error, so the
-             action must not open that earlier release. -->
-            <div appDialogFooterStart>
-                @if (error()) {
-                    <button
-                        mat-button
-                        type="button"
-                        (click)="openRelease(releasesPageUrl())"
-                        data-test-id="release-notes-open-releases"
-                    >
-                        <mat-icon>open_in_new</mat-icon>
-                        {{
-                            'SETTINGS.APP_UPDATE_OPEN_RELEASES_PAGE' | translate
-                        }}
-                    </button>
-                } @else if (notes()?.htmlUrl; as htmlUrl) {
-                    <button
-                        mat-button
-                        type="button"
-                        (click)="openRelease(htmlUrl)"
-                        data-test-id="release-notes-open-release"
-                    >
-                        <mat-icon>open_in_new</mat-icon>
-                        {{ 'SETTINGS.APP_UPDATE_OPEN_RELEASE' | translate }}
-                    </button>
+            <!-- The link to the current release is a third action at the
+             footer's start, and is checked against the error first: a failed
+             Previous/Next keeps the earlier notes for navigation, but the
+             body shows the error, so the action must not open that earlier
+             release. This fork has no release feed, so the fallback "open
+             the releases page" action (which pointed at the upstream
+             repository) is gone — errors end with the Close button. -->
+            @if (!error()) {
+                @if (notes()?.htmlUrl; as htmlUrl) {
+                    <div appDialogFooterStart>
+                        <button
+                            mat-button
+                            type="button"
+                            (click)="openRelease(htmlUrl)"
+                            data-test-id="release-notes-open-release"
+                        >
+                            <mat-icon>open_in_new</mat-icon>
+                            {{
+                                'SETTINGS.APP_UPDATE_OPEN_RELEASE' | translate
+                            }}
+                        </button>
+                    </div>
                 }
-            </div>
+            }
             <div appDialogFooter>
                 <button mat-flat-button type="button" (click)="close()">
                     {{ 'CLOSE' | translate }}
@@ -342,16 +335,6 @@ export class AppUpdateReleaseNotesDialogComponent implements OnInit {
     readonly loading = signal(false);
     readonly error = signal<ReleaseNotesLoadError | null>(null);
     readonly notes = signal<ElectronBridgeAppUpdateReleaseNotes | null>(null);
-    /** Release list of the channel the failed request was about. */
-    readonly releasesPageUrl = computed(() =>
-        appUpdateReleasesListUrl(
-            appVersionChannel(
-                this.error()?.version ??
-                    this.notes()?.version ??
-                    this.data.initialVersion
-            )
-        )
-    );
     readonly renderedMarkdown = computed(() => {
         const markdown = this.notes()?.bodyMarkdown ?? '';
         const html = marked.parse(markdown, { async: false }) as string;

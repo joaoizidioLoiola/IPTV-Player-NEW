@@ -92,7 +92,7 @@ describe('AppUpdateReleaseNotesDialogComponent', () => {
         expect(image.classList).toContain('release-notes-dialog__image');
     });
 
-    it('explains a version without a GitHub release and links to the channel release list', async () => {
+    it('explains a version without a GitHub release and offers no upstream releases link', async () => {
         (
             window.electron.getAppUpdateReleaseNotes as jest.Mock
         ).mockRejectedValueOnce(
@@ -100,9 +100,6 @@ describe('AppUpdateReleaseNotesDialogComponent', () => {
                 "Error invoking remote method 'APP_UPDATE:GET_RELEASE_NOTES': Error: Release notes were not found for 0.23.0"
             )
         );
-        const openSpy = jest
-            .spyOn(window, 'open')
-            .mockImplementation(() => null);
 
         fixture.detectChanges();
         await fixture.whenStable();
@@ -123,18 +120,18 @@ describe('AppUpdateReleaseNotesDialogComponent', () => {
             version: '0.23.0',
         });
 
-        (
+        // This fork has no release feed: the releases-page fallback would
+        // only ever point at the upstream repository, so it is not offered.
+        expect(
             fixture.nativeElement.querySelector(
                 '[data-test-id="release-notes-open-releases"]'
-            ) as HTMLButtonElement
-        ).click();
-
-        expect(openSpy).toHaveBeenCalledWith(
-            'https://github.com/4gray/iptvnator/releases',
-            '_blank',
-            'noreferrer'
-        );
-        openSpy.mockRestore();
+            )
+        ).toBeNull();
+        expect(
+            fixture.nativeElement.querySelector(
+                '[data-test-id="release-notes-open-release"]'
+            )
+        ).toBeNull();
     });
 
     it('shows a generic failure with the underlying reason for other errors', async () => {
@@ -167,7 +164,7 @@ describe('AppUpdateReleaseNotesDialogComponent', () => {
             fixture.nativeElement.querySelector(
                 '[data-test-id="release-notes-open-releases"]'
             )
-        ).not.toBeNull();
+        ).toBeNull();
     });
 
     it('explains in the active language that the build has no release notes', async () => {
@@ -189,7 +186,7 @@ describe('AppUpdateReleaseNotesDialogComponent', () => {
         );
     });
 
-    it('offers the release list, not the earlier release, when paging fails', async () => {
+    it('shows only the error, with no releases-page link, when paging fails', async () => {
         fixture.detectChanges();
         await fixture.whenStable();
         fixture.detectChanges();
@@ -213,8 +210,8 @@ describe('AppUpdateReleaseNotesDialogComponent', () => {
         await fixture.whenStable();
         fixture.detectChanges();
 
-        // The earlier notes stay for navigation, but the body is the error,
-        // so the action must match the body.
+        // The earlier notes stay for navigation, but the body is the error;
+        // the fork's dialog offers no upstream releases-page fallback.
         expect(fixture.componentInstance.notes()?.tagName).toBe('v0.23.0');
         expect(
             fixture.nativeElement.querySelector(
@@ -230,7 +227,7 @@ describe('AppUpdateReleaseNotesDialogComponent', () => {
             fixture.nativeElement.querySelector(
                 '[data-test-id="release-notes-open-releases"]'
             )
-        ).not.toBeNull();
+        ).toBeNull();
     });
 
     it('loads previous notes lazily without closing the dialog', async () => {

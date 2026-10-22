@@ -217,18 +217,36 @@ describe('SettingsAppUpdateFacade', () => {
     });
 
     describe('Installed version without the release check', () => {
-        it('shows the installed version before GitHub answers', () => {
+        it('does not call the releases feed when Settings opens on the desktop runtime', () => {
+            // beforeEach installs the desktop bridge stub, so the facade
+            // treats this as Electron; opening Settings must not issue the
+            // upstream api.github.com request.
+            facade.checkAppVersion();
+
+            expect(
+                TestBed.inject(SettingsService).getAppVersion
+            ).not.toHaveBeenCalled();
+            expect(facade.version()).toBe('1.0.0');
+            expect(facade.updateMessage()).toBe('');
+        });
+
+        it('shows the installed version before the web update feed answers (PWA)', () => {
+            window.electron = undefined as unknown as typeof window.electron;
             (
                 TestBed.inject(SettingsService).getAppVersion as jest.Mock
             ).mockReturnValue(NEVER);
 
             facade.checkAppVersion();
 
+            expect(
+                TestBed.inject(SettingsService).getAppVersion
+            ).toHaveBeenCalled();
             expect(facade.version()).toBe('1.0.0');
             expect(facade.updateMessage()).toBe('');
         });
 
-        it('keeps the installed version when GitHub cannot be reached', async () => {
+        it('keeps the installed version when the web update feed cannot be reached (PWA)', async () => {
+            window.electron = undefined as unknown as typeof window.electron;
             (
                 TestBed.inject(SettingsService).getAppVersion as jest.Mock
             ).mockReturnValue(

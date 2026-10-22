@@ -247,12 +247,13 @@ describe('request header overrides', () => {
         expect(mockOnBeforeSendHeaders).not.toHaveBeenCalled();
     });
 
-    it('injects the YouTube embed Referer when none is present', async () => {
-        const { registerStaticHeaderShims } = await import(
-            './request-header-overrides.service'
-        );
+    it('injects the neutral Referer for YouTube embed requests', async () => {
+        const { configureRequestHeaderOverride } =
+            await import('./request-header-overrides.service');
 
-        registerStaticHeaderShims();
+        // Packaged builds send no Referer from file://, so /embed requests
+        // get the neutral first-party placeholder to avoid YouTube Error 153.
+        configureRequestHeaderOverride('EmbedAgent/1.0');
         expect(mockOnBeforeSendHeaders).toHaveBeenCalledTimes(1);
 
         const listener = mockOnBeforeSendHeaders.mock.calls[0][1];
@@ -261,15 +262,39 @@ describe('request header overrides', () => {
             'https://www.youtube-nocookie.com/embed/abc123'
         );
 
-        expect(headers['Referer']).toBe('https://4gray.github.io/iptvnator/');
+        expect(headers['Referer']).toBe('https://iptv-player.local/');
+        expect(headers['User-Agent']).toBe('EmbedAgent/1.0');
+        // No header may attribute traffic to the upstream project.
+        for (const value of Object.values(headers)) {
+            expect(value).not.toMatch(/4gray|iptvnator|github\.io/);
+        }
+    });
+
+    it('injects the neutral Referer for bare youtube.com embed hosts too', async () => {
+        const { configureRequestHeaderOverride } =
+            await import('./request-header-overrides.service');
+
+        configureRequestHeaderOverride('EmbedAgent/1.0');
+        const listener = mockOnBeforeSendHeaders.mock.calls[0][1];
+
+        for (const host of [
+            'youtube.com',
+            'www.youtube.com',
+            'youtube-nocookie.com',
+        ]) {
+            const headers = runHeaderListener(
+                listener,
+                `https://${host}/embed/abc123`
+            );
+            expect(headers['Referer']).toBe('https://iptv-player.local/');
+        }
     });
 
     it('keeps an existing Referer on YouTube embed requests', async () => {
-        const { registerStaticHeaderShims } = await import(
-            './request-header-overrides.service'
-        );
+        const { configureRequestHeaderOverride } =
+            await import('./request-header-overrides.service');
 
-        registerStaticHeaderShims();
+        configureRequestHeaderOverride('EmbedAgent/1.0');
         const listener = mockOnBeforeSendHeaders.mock.calls[0][1];
         const headers = runHeaderListener(
             listener,
@@ -282,11 +307,10 @@ describe('request header overrides', () => {
     });
 
     it('does not inject the Referer for non-embed YouTube paths', async () => {
-        const { registerStaticHeaderShims } = await import(
-            './request-header-overrides.service'
-        );
+        const { configureRequestHeaderOverride } =
+            await import('./request-header-overrides.service');
 
-        registerStaticHeaderShims();
+        configureRequestHeaderOverride('EmbedAgent/1.0');
         const listener = mockOnBeforeSendHeaders.mock.calls[0][1];
         const headers = runHeaderListener(
             listener,
@@ -296,12 +320,11 @@ describe('request header overrides', () => {
         expect(headers['Referer']).toBeUndefined();
     });
 
-    it('does not inject the embed Referer for non-YouTube hosts', async () => {
-        const { registerStaticHeaderShims } = await import(
-            './request-header-overrides.service'
-        );
+    it('does not inject the Referer for non-YouTube hosts', async () => {
+        const { configureRequestHeaderOverride } =
+            await import('./request-header-overrides.service');
 
-        registerStaticHeaderShims();
+        configureRequestHeaderOverride('EmbedAgent/1.0');
         const listener = mockOnBeforeSendHeaders.mock.calls[0][1];
         const headers = runHeaderListener(
             listener,
