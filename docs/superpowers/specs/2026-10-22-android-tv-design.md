@@ -147,11 +147,31 @@ loopback, private and reserved addresses including IPv4-mapped IPv6.
 **[FATO]** A WebView has the same CORS and mixed-content restrictions as a
 browser.
 
-**[RECOMENDAÇÃO]** Phase 1 uses the existing `web-backend` as the provider proxy,
-exactly as the PWA does. **[INFERÊNCIA]** The alternative — reimplementing
-`/parse`, `/xtream` and `/stalker` with OkHttp inside the APK — is a port of the
-backend into Kotlin and is deferred until a requirement makes the app
-offline-first.
+**[IMPLEMENTADO — Fase 1.5]** O APK **não** usa o `web-backend`. A ponte
+`CapacitorHttp` (`apps/web/src/app/services/native-http.service.ts`) executa a
+requisição na pilha HTTP da plataforma, e o
+`NativeProviderTransportService` reproduz `/parse`, `/xtream` e `/stalker` em
+TypeScript reutilizando `createPlaylistObject`, `normalizeXtreamServerUrl`,
+`buildStalkerIdentityRequestContext` e `buildStalkerRequestUrl` — o mesmo
+contrato do Electron e do backend. `PwaService` só desvia para esse caminho
+quando `isNativeCapacitorShell()` é verdadeiro; PWA e Electron continuam no
+transporte anterior.
+
+**[FATO]** Validado no emulador contra o `xtream-mock-server` em
+`http://10.0.2.2:3211`: `get_account_info`, categorias,
+`get_live_streams`, `get_vod_streams` e `get_series` responderam 200 via
+`CapacitorHttp`, e o dashboard carregou 180 itens. Nenhuma chamada a
+`/provider-targets`. Um eco de headers confirmou que `Cookie`, `Authorization`
+e `SN` chegam intactos ao portal (necessário para Stalker).
+
+**[FATO]** `environment.prod.ts` não aponta mais para a API do upstream
+(`https://iptvnator-playlist-parser-api.vercel.app`, que responde 402). O padrão
+passa a ser `/api`, sobrescrito pelo `assets/app-config.js` de cada deployment.
+
+**[INFERÊNCIA]** A proteção SSRF do backend (DNS pinning, bloqueio de IP
+privado) não se aplica ao APK: o dispositivo acessa a rede do usuário, e
+provedores locais são um caso de uso legítimo. A validação da URL digitada
+continua no formulário.
 
 ---
 
@@ -353,6 +373,6 @@ design choice, and none can be settled from documentation.
 | Layout strategy | Two shells, shared components |
 | Player scope | Native for linear streams; the web player stays for VOD previews if it remains useful |
 | Distribution | Direct APK first; Play and Amazon Appstore later |
-| Provider proxy | Reuse `web-backend` in Phase 1; a native proxy is deferred |
+| Provider proxy | Bridge nativa `CapacitorHttp` no APK (Fase 1.5); `web-backend` permanece para PWA/self-hosted |
 | DRM | Only ClearKey in-app, as today; Widevine L1 needs a separate decision |
 | Team | One Angular/front engineer and one Android engineer; the project stalls in Phase 2 without the Android one |

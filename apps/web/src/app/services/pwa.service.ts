@@ -42,6 +42,7 @@ import {
     createLogger,
 } from '@iptvnator/portal/shared/util/logger';
 import { getRuntimeBackendUrl } from './runtime-config';
+import { NativeProviderTransportService } from './native-provider-transport.service';
 
 /**
  * How long to wait for the backend to forget a host before giving up.
@@ -90,6 +91,7 @@ export class PwaService extends DataService {
     private readonly swUpdate = inject(SwUpdate);
     private readonly translateService = inject(TranslateService);
     private readonly serverStatus = inject(ServerStorageStatusService);
+    private readonly nativeProvider = inject(NativeProviderTransportService);
     private readonly logger = createLogger('PwaService');
     private readonly providerTargetIds = new Map<string, Promise<string>>();
     private readonly silentXtreamActions = new Set<string>([
@@ -198,6 +200,12 @@ export class PwaService extends DataService {
     }): Promise<{ reset: boolean }> {
         if (!payload?.url) {
             return { reset: false };
+        }
+
+        // The APK talks to providers directly; there is no backend breaker to
+        // clear, so the caller can retry immediately.
+        if (this.nativeProvider.isAvailable()) {
+            return { reset: true };
         }
 
         // Bounded, because every caller awaits this BEFORE issuing the request
@@ -426,9 +434,14 @@ export class PwaService extends DataService {
         });
 
         try {
-            const targetId = await this.getProviderTargetId(payload.url);
+            const usesNativeTransport = this.nativeProvider.isAvailable();
+            // The APK talks to the panel directly; registering a target is a
+            // web-backend concept and must not be attempted there.
+            const targetId = usesNativeTransport
+                ? null
+                : await this.getProviderTargetId(payload.url);
             const requestParams = {
-                targetId,
+                ...(targetId ? { targetId } : {}),
                 ...payload.params,
                 ...(payload.connectionTest ? { connectionTest: 'true' } : {}),
             };
@@ -453,15 +466,25 @@ export class PwaService extends DataService {
             logPortalDebugRequest(context);
 
             let result: PwaErrorResult | PwaXtreamResult;
-            const response = (await firstValueFrom(
-                this.http.get<PwaXtreamResponse>(
-                    `${this.corsProxyUrl}/xtream`,
-                    {
-                        params: requestParams,
-                        ...headers,
-                    }
-                )
-            )) as PwaXtreamResponse;
+            const response = this.nativeProvider.isAvailable()                ? await this.nativeProvider.requestXtream({
+                      url: payload.url,
+                      params: payload.params,
+                      ...(payload.macAddress
+                          ? { macAddress: payload.macAddress }
+                          : {}),
+                      ...(payload.connectionTest
+                          ? { connectionTest: true }
+                          : {}),
+                  })
+                : ((await firstValueFrom(
+                      this.http.get<PwaXtreamResponse>(
+                          `${this.corsProxyUrl}/xtream`,
+                          {
+                              params: requestParams,
+                              ...headers,
+                          }
+                      )
+                  )) as PwaXtreamResponse);
 
             if (payload.connectionTest) return response;
 
@@ -626,14 +649,19 @@ export class PwaService extends DataService {
         });
 
         try {
-            const targetId = await this.getProviderTargetId(payload.url);
+            const usesNativeTransport = this.nativeProvider.isAvailable();
+            // Target registration is a web-backend concept; the APK sends the
+            // portal request itself and must not touch `/provider-targets`.
+            const targetId = usesNativeTransport
+                ? null
+                : await this.getProviderTargetId(payload.url);
             const token = payload.token ?? payload.params.token;
             // `macAddress`, `token` and `serialNumber` are control params for
             // the /stalker proxy: it turns them into the portal-facing
             // Cookie / Authorization / SN headers and strips them from the
             // query it forwards to the portal.
             const requestParams = {
-                targetId,
+                ...(targetId ? { targetId } : {}),
                 ...payload.params,
                 macAddress: payload.macAddress,
                 ...(token ? { token } : {}),
@@ -663,16 +691,16 @@ export class PwaService extends DataService {
             logPortalDebugRequest(context);
 
             // Make the fetch request
-            const response = await this.backendFetch(requestUrl, {});
-
-            if (!response.ok) {
-                throw new Error(
-                    `Error: ${response.statusText} (Status: ${response.status})`
-                );
-            }
-
-            // Parse and return the JSON response
-            const responseBody = await response.json();
+            const responseBody = this.nativeProvider.isAvailable()                ? await this.nativeProvider.requestStalker({
+                      url: payload.url,
+                      params: payload.params,
+                      macAddress: payload.macAddress,
+                      ...(token ? { token } : {}),
+                      ...(payload.serialNumber
+                          ? { serialNumber: payload.serialNumber }
+                          : {}),
+                  })
+                : await this.fetchStalkerResponseBody(requestUrl);
 
             // The proxy converts upstream provider failures (404 on an
             // absent endpoint, 5xx) into an HTTP 200 `{ message, status }`
@@ -745,7 +773,25 @@ export class PwaService extends DataService {
         }
     }
 
+    private async fetchStalkerResponseBody(
+        requestUrl: string
+    ): Promise<Record<string, unknown>> {
+        const response = await this.backendFetch(requestUrl, {});
+
+        if (!response.ok) {
+            throw new Error(
+                `Error: ${response.statusText} (Status: ${response.status})`
+            );
+        }
+
+        return response.json() as Promise<Record<string, unknown>>;
+    }
+
     getPlaylistFromUrl(url: string, userAgent?: string): Observable<Playlist> {
+        if (this.nativeProvider.isAvailable()) {
+            return from(this.nativeProvider.fetchPlaylist(url, userAgent));
+        }
+
         const normalizedUserAgent = userAgent?.trim();
         return from(this.getProviderTargetId(url)).pipe(
             switchMap((targetId) =>

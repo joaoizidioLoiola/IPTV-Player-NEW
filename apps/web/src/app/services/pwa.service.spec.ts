@@ -7,7 +7,7 @@ import { LazySnackBar } from '@iptvnator/services/lazy-snack-bar';
 import { SwUpdate } from '@angular/service-worker';
 import { Store } from '@ngrx/store';
 import { TranslateService } from '@ngx-translate/core';
-import { config as rxjsConfig, Observable, of, Subject } from 'rxjs';
+import { config as rxjsConfig, firstValueFrom, Observable, of, Subject } from 'rxjs';
 import {
     buildHostConnectivityFastFailMessage,
     CONNECTIVITY_GUARD_RESET,
@@ -26,6 +26,7 @@ import {
     writeServerAccessToken,
 } from '@iptvnator/services';
 import { PwaService } from './pwa.service';
+import { NativeProviderTransportService } from './native-provider-transport.service';
 
 describe('PwaService', () => {
     let http: HttpTestingController;
@@ -755,6 +756,29 @@ describe('PwaService', () => {
         } finally {
             globalThis.fetch = originalFetch;
         }
+    });
+
+    it('routes playlist URLs through the native transport in the APK shell', async () => {
+        const nativeTransport = TestBed.inject(NativeProviderTransportService);
+        jest.spyOn(nativeTransport, 'isAvailable').mockReturnValue(true);
+        const fetchPlaylist = jest
+            .spyOn(nativeTransport, 'fetchPlaylist')
+            .mockResolvedValue({ _id: 'native-playlist' } as never);
+
+        await firstValueFrom(
+            service.getPlaylistFromUrl(
+                'https://provider.example/list.m3u',
+                'Player/1.0'
+            )
+        );
+
+        expect(fetchPlaylist).toHaveBeenCalledWith(
+            'https://provider.example/list.m3u',
+            'Player/1.0'
+        );
+        // No provider-target registration and no /parse call: the native
+        // transport must not fall through to the web backend.
+        http.verify();
     });
 
     it('asks the backend to forget a host when the connectivity guard is reset', async () => {
