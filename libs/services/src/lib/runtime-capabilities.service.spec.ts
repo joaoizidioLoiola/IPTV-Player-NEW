@@ -694,7 +694,7 @@ describe('RuntimeCapabilitiesService', () => {
         expect(service.isAndroidTv).toBe(false);
     });
 
-    it('does not claim native playback before the phase 2 Media3 plugin', () => {
+    it('does not claim native playback before the Media3 plugin is registered', () => {
         setWindowCapacitor({
             isNativePlatform: () => true,
             getPlatform: () => 'android',
@@ -703,6 +703,18 @@ describe('RuntimeCapabilitiesService', () => {
         const service = new RuntimeCapabilitiesService();
 
         expect(service.supportsNativePlayer).toBe(false);
+    });
+
+    it('claims native playback once the shell registers the Media3 plugin', () => {
+        setWindowCapacitor({
+            isNativePlatform: () => true,
+            getPlatform: () => 'android',
+            Plugins: { NativePlayer: {} },
+        });
+
+        const service = new RuntimeCapabilitiesService();
+
+        expect(service.supportsNativePlayer).toBe(true);
     });
 
     it('requires a WebView update only when the user agent names an old Chromium', () => {

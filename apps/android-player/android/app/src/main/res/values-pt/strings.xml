@@ -2,4 +2,13 @@
 <resources>
     <string name="webview_update_required_title">O Android System WebView está desatualizado</string>
     <string name="webview_update_required_message">O IPTV Player NEW precisa do Chromium %1$d ou mais recente, e este aparelho tem o Chromium %2$d. Atualize o \"Android System WebView\" na Play Store ou na loja do seu aparelho e abra o IPTV Player NEW novamente.</string>
+    <string name="playback_channel_name">Reprodução</string>
+    <string name="track_selection_title">Áudio e legendas</string>
+    <string name="track_audio_prefix">Áudio: %1$s</string>
+    <string name="track_subtitle_prefix">Legendas: %1$s</string>
+    <string name="track_audio_fallback">Faixa %1$d</string>
+    <string name="track_subtitle_fallback">Faixa %1$d</string>
+    <string name="track_subtitles_off">Legendas: desativadas</string>
+    <string name="track_none">Nenhuma faixa de áudio ou legenda selecionável</string>
+    <string name="tracks_button_description">Áudio e legendas</string>
 </resources>

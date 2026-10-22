@@ -175,6 +175,39 @@ continua no formulário.
 
 ---
 
+### 3.3 Native playback (implemented in Phase 2)
+
+**[IMPLEMENTADO]** `PlaybackService` (`MediaSessionService`) owns the
+`ExoPlayer`; `PlayerActivity` is a fullscreen `PlayerView` attached through a
+`MediaController`. Closing the activity detaches the surface but keeps audio
+decoding in the foreground service, with a Media3 notification and standard
+media controls.
+
+- Portal headers: `User-Agent`, `Referer` and `Origin` reach the player through
+  `DefaultHttpDataSource.Factory.setDefaultRequestProperties`, with
+  `setAllowCrossProtocolRedirects(true)` for HTTPS redirects.
+- Live edge: live items get a `MediaItem.LiveConfiguration` target offset of
+  3 s.
+- **HLS fallback**: a live URL ending in `.ts` whose response is an HLS
+  playlist (redirect or mislabelled extension) is retried once as HLS; real
+  MPEG-TS stays on the progressive extractor.
+- **Audio/subtitle selection**: a track dialog is available through the
+  on-screen button and the TV remote `MENU`/`INFO` key, overriding
+  `TrackSelectionParameters` per track type.
+- The Angular side routes Xtream live channels to `NativePlayerService` when
+  `RuntimeCapabilitiesService.supportsNativePlayer` is true (the shell
+  registered the `NativePlayer` plugin). VOD and catch-up remain on the web
+  player for now.
+- **[PENDENTE]** Native "open in external player" intent, and UDP/RTSP
+  verification on real hardware.
+
+**[FATO]** Validated on the emulator against the real panel: a live Xtream
+channel opens in `PlayerActivity`, MediaSession reports `PLAYING`, the
+foreground service and its notification stay alive after the activity closes,
+and audio continues in the background.
+
+---
+
 ## 4. Toolchain and packaging
 
 **[FATO]** Capacitor 8 requires Node 22+, JDK 21, AGP 8.13.0, Gradle 8.14.3,
@@ -337,6 +370,11 @@ and no D-pad test.
 | **0** | Toolchain (JDK 21, cmdline-tools); `apps/android-player` project + Capacitor 8; build the PWA bundle into a debug APK; install on a device; Media3 plugin spike against HLS, MPEG-TS, AC3, UDP and RTSP | A debug APK boots on a real device and plays one HLS and one UDP stream through the native player |
 | **1** | Runtime capabilities; service worker disabled in the native shell; WebView version gate with a clear message; storage adapters; TV manifest; `isTv` detection | The app runs on phone and TV, keeps playlists across a clear-cache, and refuses old WebViews with an explanation |
 | **2** | Media3 plugin: fullscreen Activity, `PlayerView`, headers, live edge, subtitle and audio track selection, `MediaSession` and foreground service; native "open in external player" intent | Linear streams play natively with working audio/subtitle selection; background audio continues |
+
+**[IMPLEMENTADO — Fase 2 parcial]** Fullscreen Media3 playback, portal
+headers, live edge, audio/subtitle selection, `MediaSession` and the
+foreground service are in the APK. The native "open in external player" intent
+and UDP/RTSP verification on real hardware remain open (see §3.3).
 | **3** | TV shell and spatial focus; overscan-safe tokens; 48 dp targets; hover-independent affordances | 100% of navigation works by D-pad with a visible focus indicator, at 960×540 and 1920×1080 |
 | **4** | E2E coverage: TV viewports, D-pad journeys, touch journeys; packaging: keystore, `versionCode` mapping, AAB, 64-bit and 16 KB page alignment | The AAB installs on phone and TV box, and the D-pad suite is green |
 | **5** | Distribution: signed APK on our site, developer verification for Brazil, in-app update path for the APK channel | A user can install, update and uninstall without touching a store |
@@ -371,7 +409,7 @@ design choice, and none can be settled from documentation.
 | API 21 in the main APK | Cut; a frozen legacy build only if contracted |
 | Architecture | Angular + Capacitor + native Media3 plugin |
 | Layout strategy | Two shells, shared components |
-| Player scope | Native for linear streams; the web player stays for VOD previews if it remains useful |
+| Player scope | **[IMPLEMENTADO]** Native Media3 for Xtream live streams; the web player remains for VOD and catch-up |
 | Distribution | Direct APK first; Play and Amazon Appstore later |
 | Provider proxy | Bridge nativa `CapacitorHttp` no APK (Fase 1.5); `web-backend` permanece para PWA/self-hosted |
 | DRM | Only ClearKey in-app, as today; Widevine L1 needs a separate decision |

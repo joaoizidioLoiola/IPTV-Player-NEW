@@ -7,4 +7,13 @@
 
     <string name="webview_update_required_title">Android System WebView is out of date</string>
     <string name="webview_update_required_message">IPTV Player NEW needs Chromium %1$d or newer, and this device has Chromium %2$d. Update \"Android System WebView\" in the Play Store or in your app store, then open IPTV Player NEW again.</string>
+    <string name="playback_channel_name">Playback</string>
+    <string name="track_selection_title">Audio and subtitles</string>
+    <string name="track_audio_prefix">Audio: %1$s</string>
+    <string name="track_subtitle_prefix">Subtitles: %1$s</string>
+    <string name="track_audio_fallback">Track %1$d</string>
+    <string name="track_subtitle_fallback">Track %1$d</string>
+    <string name="track_subtitles_off">Subtitles: off</string>
+    <string name="track_none">No selectable audio or subtitle tracks</string>
+    <string name="tracks_button_description">Audio and subtitles</string>
 </resources>

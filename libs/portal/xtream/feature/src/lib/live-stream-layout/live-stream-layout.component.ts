@@ -100,6 +100,7 @@ import {
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import {
     DatabaseService,
+    NativePlayerService,
     ParentalLockService,
     RecordingsService,
     RuntimeCapabilitiesService,
@@ -176,6 +177,7 @@ export class LiveStreamLayoutComponent
     private readonly archiveCopy = inject(EpgArchiveCopyService);
     private readonly xtreamUrlService = inject(XtreamUrlService);
     private readonly runtime = inject(RuntimeCapabilitiesService);
+    private readonly nativePlayer = inject(NativePlayerService);
     private readonly settingsStore = inject(SettingsStore);
     private readonly portalPlayer = inject(PORTAL_PLAYER);
     private readonly parentalLock = inject(ParentalLockService);
@@ -677,8 +679,16 @@ export class LiveStreamLayoutComponent
             this.resolveLiveProviderCategoryId(item);
         const playlist = this.xtreamStore.currentPlaylist();
         this.activePlaylistId = playlist?.id ?? null;
+        // The Android shell plays linear streams with Media3. Keep the real
+        // URL out of the WebView state so the web engine does not mount a
+        // second, competing playback behind the native activity.
+        const nativePlayback =
+            startPlayback &&
+            !!streamUrl &&
+            this.usesEmbeddedPlayer() &&
+            this.nativePlayer.isAvailable();
         this.activePlayback.set({
-            streamUrl,
+            streamUrl: nativePlayback ? '' : streamUrl,
             liveAutoTsUrl: playlist
                 ? this.xtreamUrlService.constructAutoLiveTsUrl(
                       playlist,
@@ -710,6 +720,27 @@ export class LiveStreamLayoutComponent
                     ? this.playbackSessionKey()
                     : undefined
             );
+        }
+        if (nativePlayback) {
+            const headers: Record<string, string> = {};
+            if (playlist?.userAgent) {
+                headers['User-Agent'] = playlist.userAgent;
+            }
+            if (playlist?.referrer) {
+                headers['Referer'] = playlist.referrer;
+            }
+            if (playlist?.origin) {
+                headers['Origin'] = playlist.origin;
+            }
+            void this.nativePlayer.play({
+                url: streamUrl,
+                title: item.title ?? item.name ?? '',
+                contentType: 'live',
+                userAgent: playlist?.userAgent,
+                headers:
+                    Object.keys(headers).length > 0 ? headers : undefined,
+            });
+            return;
         }
         if (this.usesEmbeddedPlayer() || !startPlayback) {
             return;

@@ -12,6 +12,22 @@ export type RuntimeEnvironment = 'electron' | 'pwa';
 
 type RuntimeElectronBridge = Partial<ElectronBridgeApi>;
 
+/** The Android shell registers the plugin by name; the proxy is an object. */
+function hasNativePlayerPlugin(): boolean {
+    if (typeof window === 'undefined') {
+        return false;
+    }
+    const capacitor = (
+        window as {
+            Capacitor?: { Plugins?: { NativePlayer?: unknown } };
+        }
+    ).Capacitor;
+    return (
+        typeof capacitor?.Plugins?.NativePlayer === 'object' &&
+        capacitor.Plugins.NativePlayer !== null
+    );
+}
+
 // Ordinary playback methods include season batches, so partial bridges use
 // the in-memory path instead of throwing mid-action. Atomic backup restore is
 // checked separately by a restore-only preflight; it never changes data-source
@@ -80,12 +96,13 @@ export class RuntimeCapabilitiesService {
     }
 
     /**
-     * False until the phase 2 Media3 plugin ships: the WebView `<video>`
-     * element cannot play MPEG-TS/RTSP/UDP linear streams, so native
-     * playback must not be claimed before the plugin is registered.
+     * True when the Android shell registered the Media3 player plugin. The
+     * WebView `<video>` element cannot play MPEG-TS/RTSP/UDP linear streams,
+     * so linear playback is routed to the native player only when this
+     * capability is present.
      */
     get supportsNativePlayer(): boolean {
-        return false;
+        return this.isNativeShell && hasNativePlayerPlugin();
     }
 
     /** WebView floor gate (phase 1 detection; the phase 3 screen consumes it). */
