@@ -112,6 +112,19 @@ plugin, reusing `libs/shared/database/src/lib/schema.ts` as DDL. The shared
 Settings and user data move from `StorageMap` and `localStorage` to the
 Capacitor Preferences adapter behind the existing tokens, so no feature changes.
 
+**[IMPLEMENTADO — Fase 1]** O backend `sqlite-native`
+(`libs/services/src/lib/native-playlist-store.ts`) usa
+`@capacitor-community/sqlite@8.1.1` (MIT, peer Capacitor 8, sem pacote web
+obrigatório no Android) sobre `databases/iptv-player-newSQLite.db`, com
+parâmetros vinculados e uma conexão memoizada por store. O upgrade de schema
+precisa ser registrado **antes** de `createConnection`: o plugin captura o mapa
+de upgrades ao construir a conexão e só o aplica no `open()`, então registrar
+depois deixa um banco novo sem tabelas. Verificado no emulador: um documento
+semeado renderiza em "Recently Used Sources" e sobrevive à remoção de
+`app_webview` e `cache`. Pendente: mover settings/user data para
+`@capacitor/preferences` (adaptador assíncrono) e revisar `allowBackup` para o
+banco.
+
 **[FATO]** The web runtime keeps playlists in IndexedDB
 (`libs/shared/interfaces/src/lib/indexed-db.config.ts:9-61`) and user data in
 `localStorage` through `USER_DATA_STORAGE`
