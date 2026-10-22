@@ -80,6 +80,12 @@ electron-builder 26 signs with `signtool` (`electron-builder.json`):
   (`CSC_LINK` / `CSC_KEY_PASSWORD`, `WIN_CSC_LINK` / `WIN_CSC_KEY_PASSWORD`
   aliases accepted):
 
+**[DECISÃO]** The production Authenticode certificate is issued to the
+company's **CNPJ** (legal entity), not to an individual CPF. CI validates the
+pipeline with a self-signed code-signing certificate until the purchase; the
+secret names and the `signtool verify` gate do not change when the real
+certificate replaces it.
+
 | Secret | Content |
 | --- | --- |
 | `CSC_LINK` | Base64-encoded `.pfx` of the code-signing certificate, or a `file://`/`https://` URL to it |
