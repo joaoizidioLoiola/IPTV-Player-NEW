@@ -1,0 +1,280 @@
+name: Windows Release
+
+# Builds, signs and publishes the fork's Windows installer draft. This is the
+# fork's release pipeline; the upstream build-and-make.yaml matrix is
+# disabled (see its header comment).
+#
+# Trigger: push a tag named `v<package.json version>` (for example `v0.25.0`
+# when package.json carries `0.25.0`). The run creates a DRAFT GitHub release
+# named after the tag holding the installer, its `.blockmap` and the
+# electron-updater feed `latest.yml`. Publishing the draft is the manual gate:
+# electron-updater only consults published releases, so the update channel
+# (APP_UPDATE_FEED_CONFIGURED = true) goes live for users exactly when the
+# human publishes the draft. Contract:
+# docs/architecture/windows-release-pipeline.md.
+#
+# ── Maintainer setup (repository Settings → Secrets → Actions) ─────────────
+# - CSC_LINK          Base64-encoded .pfx of the code-signing certificate,
+#                     or a file:// / https:// URL to it. electron-builder's
+#                     documented credential channel for Windows signing
+#                     (WIN_CSC_LINK is accepted as an alias).
+# - CSC_KEY_PASSWORD  Password of that .pfx. Nothing about the certificate is
+#                     hardcoded in this repository.
+# - GITHUB_TOKEN is provided automatically with `permissions: contents: write`
+#   below; no PAT is needed for a same-repository release.
+#
+# Without CSC_LINK the run fails before packaging: a release must never ship
+# unsigned installers over a self-update channel.
+on:
+    push:
+        tags:
+            - 'v*.*.*'
+    workflow_dispatch:
+
+concurrency:
+    # Serial per tag: a re-run after a successful draft creation must not
+    # race its own asset uploads.
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: false
+
+permissions:
+    contents: write
+
+jobs:
+    release:
+        name: Build and publish Windows installer draft
+        runs-on: windows-latest
+        timeout-minutes: 120
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v7
+              with:
+                  # The release body is extracted from the committed
+                  # CHANGELOG.md section for this version; a shallow checkout
+                  # is enough for that, but keep history for the build commit
+                  # marker.
+                  fetch-depth: 0
+
+            - name: Install pnpm
+              uses: pnpm/action-setup@v6.1.0
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v7
+              with:
+                  node-version-file: '.nvmrc'
+                  cache: 'pnpm'
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            - name: Check tag matches package.json version
+              shell: bash
+              env:
+                  VERSION: ${{ github.ref_name }}
+              run: |
+                  set -euo pipefail
+
+                  if [[ "${VERSION}" != 'v'* ]]; then
+                      echo "::error::Ref ${VERSION} is not a v* tag"
+                      exit 1
+                  fi
+
+                  VERSION="${VERSION#v}"
+                  EXPECTED="$(node -p "require('./package.json').version")"
+                  if [ "${VERSION}" != "${EXPECTED}" ]; then
+                      echo "::error::Tag v${VERSION} does not match package.json version ${EXPECTED}. Bump package.json and cut the tag from that commit (release-cut skill)."
+                      exit 1
+                  fi
+
+            - name: Inject build commit
+              # Shows "<version> (<sha>)" in Settings > About so bug reports
+              # identify the exact commit.
+              env:
+                  BUILD_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+              run: node tools/build/inject-build-commit.mjs
+
+            - name: Validate signing credentials
+              # Fails closed: electron-builder would silently skip signing
+              # when CSC_LINK is empty, and an unsigned installer must never
+              # reach a self-update channel.
+              env:
+                  CSC_LINK: ${{ secrets.CSC_LINK }}
+                  CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+              shell: bash
+              run: |
+                  set -euo pipefail
+
+                  if [ -z "${CSC_LINK}" ]; then
+                      echo "::error::Missing CSC_LINK secret (code-signing .pfx, base64 or URL)."
+                      exit 1
+                  fi
+
+                  if [ -z "${CSC_KEY_PASSWORD}" ]; then
+                      echo "::error::Missing CSC_KEY_PASSWORD secret."
+                      exit 1
+                  fi
+
+            - name: Resolve pinned Windows Embedded MPV runtime
+              id: windows-embedded-mpv-runtime-pin
+              shell: bash
+              run: node tools/embedded-mpv/windows-runtime-pin.mjs --github-output
+
+            - name: Stage Windows embedded MPV runtime archive
+              shell: bash
+              env:
+                  WINDOWS_RUNTIME_URL: ${{ steps.windows-embedded-mpv-runtime-pin.outputs.url }}
+                  WINDOWS_RUNTIME_SHA256: ${{ steps.windows-embedded-mpv-runtime-pin.outputs.sha256 }}
+              run: |
+                  set -euo pipefail
+
+                  if [ -z "${WINDOWS_RUNTIME_URL}" ] || [ -z "${WINDOWS_RUNTIME_SHA256}" ]; then
+                      echo "::error::The checked-in Windows Embedded MPV runtime pin did not resolve a URL and SHA-256 digest."
+                      exit 1
+                  fi
+
+                  pnpm embedded-mpv:stage-runtime:windows-archive -- "${WINDOWS_RUNTIME_URL}" "${WINDOWS_RUNTIME_SHA256}"
+
+            - name: Make Electron app (signed, publish disabled)
+              # The GitHub release itself is created by the gh step below;
+              # electron-builder only packages and signs. --publishPolicy=never
+              # keeps the build from touching the release API, mirroring the
+              # upstream matrix's tag builds.
+              env:
+                  CSC_LINK: ${{ secrets.CSC_LINK }}
+                  CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+                  DEBUG: electron-builder
+                  IPTVNATOR_EMBEDDED_MPV_PLATFORM: win32
+                  IPTVNATOR_EMBEDDED_MPV_ARCH: x64
+                  IPTVNATOR_REQUIRE_EMBEDDED_MPV: '1'
+              run: pnpm run make:app -- --publishPolicy=never
+
+            - name: Verify packaged worker layout
+              shell: bash
+              env:
+                  IPTVNATOR_REQUIRE_EMBEDDED_MPV: '1'
+              run: pnpm run verify:package-layout -- windows x64
+
+            - name: Verify updater channel metadata
+              # The packaged app-update.yml is what electron-updater embeds;
+              # it must name this fork's repository and the Windows feed
+              # before anything is uploaded.
+              shell: bash
+              run: |
+                  set -euo pipefail
+
+                  CONFIG="$(find dist/executables -path '*win*-unpacked/resources/app-update.yml' -print -quit)"
+                  if [ -z "${CONFIG}" ]; then
+                      echo "::error::dist/executables contains no packaged app-update.yml"
+                      exit 1
+                  fi
+                  cat "${CONFIG}"
+                  grep -Fx 'provider: github' "${CONFIG}"
+                  grep -Fx 'owner: joaoizidioLoiola' "${CONFIG}"
+                  grep -Fx 'repo: IPTV-Player-NEW' "${CONFIG}"
+
+            - name: Verify installer signature (signtool)
+              # signtool verify /pa checks the Authenticode signature against
+              # machine policy. A production certificate chain validates
+              # here; a self-signed test certificate reports the chain as
+              # untrusted while still proving the file is signed and hashed
+              # correctly.
+              shell: bash
+              run: |
+                  set -euo pipefail
+
+                  INSTALLER="$(find dist/executables -maxdepth 1 -name '*-setup.exe' -print -quit)"
+                  if [ -z "${INSTALLER}" ]; then
+                      echo "::error::No NSIS installer in dist/executables"
+                      exit 1
+                  fi
+
+                  SIGNTOOL="$(find "/c/Program Files (x86)/Windows Kits/10/bin" -name signtool.exe -path '*x64*' | sort -V | tail -1)"
+                  "${SIGNTOOL}" verify /pa /all "${INSTALLER}"
+
+            - name: Get version from package.json
+              id: package-version
+              run: echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+
+            - name: Compose release body
+              id: release-meta
+              shell: bash
+              env:
+                  VERSION: ${{ steps.package-version.outputs.version }}
+                  TAG: ${{ github.ref_name }}
+              run: |
+                  set -euo pipefail
+
+                  # The full committed CHANGELOG retains internal notes,
+                  # while the release uses the authored public extraction;
+                  # an internal-only release intentionally has no authored
+                  # public text (GitHub's generated commit list remains).
+                  BODY="$(node tools/release/extract-changelog-section.mjs --public "${VERSION}")"
+
+                  {
+                      echo "tag=${TAG}"
+                      echo "commitish=${GITHUB_SHA}"
+                  } >> "${GITHUB_OUTPUT}"
+
+                  if [ -n "${BODY}" ]; then
+                      {
+                          echo "body<<RELEASE_BODY_EOF"
+                          echo "${BODY}"
+                          echo "RELEASE_BODY_EOF"
+                      } >> "${GITHUB_OUTPUT}"
+                  else
+                      echo "body=" >> "${GITHUB_OUTPUT}"
+                  fi
+
+            - name: Create draft release and upload update assets
+              # Tag builds only: a workflow_dispatch is a build/validate
+              # rehearsal and creates no release.
+              if: startsWith(github.ref, 'refs/tags/')
+              env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  TAG: ${{ steps.release-meta.outputs.tag }}
+                  NAME: ${{ github.ref_name }}
+                  COMMITISH: ${{ steps.release-meta.outputs.commitish }}
+                  BODY: ${{ steps.release-meta.outputs.body }}
+              shell: bash
+              run: |
+                  set -euo pipefail
+
+                  INSTALLER="$(find dist/executables -maxdepth 1 -name '*-setup.exe' -print -quit)"
+                  BLOCKMAP="$(find dist/executables -maxdepth 1 -name '*-setup.exe.blockmap' -print -quit)"
+                  FEED="$(find dist/executables -maxdepth 1 -name 'latest.yml' -print -quit)"
+                  for asset in "${INSTALLER}" "${BLOCKMAP}" "${FEED}"; do
+                      if [ -z "${asset}" ]; then
+                          echo "::error::Missing updater asset (installer, .blockmap and latest.yml are all required)"
+                          exit 1
+                      fi
+                  done
+
+                  ARGS=(--draft --verify-tag --title "${NAME}" --target "${COMMITISH}")
+
+                  if [ -n "${BODY}" ]; then
+                      BODY_FILE="${RUNNER_TEMP}/release-body.md"
+                      printf '%s' "${BODY}" > "${BODY_FILE}"
+                      ARGS+=(--notes-file "${BODY_FILE}")
+                  fi
+
+                  # A re-run after a failed upload finds the draft still
+                  # present; replace it so the new run starts from an empty
+                  # asset set instead of mixing stale installers into the
+                  # feed. A published release is never touched.
+                  if [ "$(gh release view "${TAG}" --json isDraft --jq '.isDraft')" = 'true' ]; then
+                      gh release delete "${TAG}" --yes --cleanup-tag=false
+                  elif gh release view "${TAG}" >/dev/null 2>&1; then
+                      echo "::error::Release ${TAG} already exists and is not a draft; nothing to replace."
+                      exit 1
+                  fi
+
+                  gh release create "${TAG}" "${ARGS[@]}"
+
+                  # Asset names must stay exactly what electron-updater's
+                  # latest.yml references: the installer, its blockmap and
+                  # the Windows updater metadata (latest.yml).
+                  gh release upload "${TAG}" "${INSTALLER}" "${BLOCKMAP}" "${FEED}"
+
+                  gh release view "${TAG}" --json assets,isDraft \
+                      --jq '"draft=\(.isDraft) assets=\([.assets[].name] | join(", "))"'

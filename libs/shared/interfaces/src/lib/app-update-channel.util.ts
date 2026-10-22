@@ -1,12 +1,13 @@
 /**
  * Desktop update channel. Electron only.
  *
- * `stable` follows the tagged releases of `4gray/iptvnator`; `nightly`
- * follows the prereleases that every master merge publishes to
- * `4gray/iptvnator-nightly`. The value is persisted with the other settings
- * in the renderer and mirrored into the main-process config by the
- * `SETTINGS_UPDATE` handler, because the startup update check runs before
- * any renderer exists to ask.
+ * `stable` follows the tagged releases of `joaoizidioLoiola/IPTV-Player-NEW`;
+ * `nightly` follows prereleases carrying the `nightly` prerelease identifier
+ * in the same repository (no nightly build is produced yet — see
+ * docs/architecture/windows-release-pipeline.md). The value is persisted with
+ * the other settings in the renderer and mirrored into the main-process
+ * config by the `SETTINGS_UPDATE` handler, because the startup update check
+ * runs before any renderer exists to ask.
  *
  * Channel switches are forward-only on purpose: a nightly build stays
  * installed until the next stable version is newer than it. A downgrade
@@ -23,15 +24,17 @@ export const APP_UPDATE_CHANNELS: readonly AppUpdateChannel[] = [
 export const DEFAULT_APP_UPDATE_CHANNEL: AppUpdateChannel = 'stable';
 
 /**
- * Whether this build has a release feed to consult. This fork has no release
- * destination yet: electron-builder ships no `publish` endpoint, so nothing
- * may query upstream release repositories or offer downloads. Every network
- * update path (startup check, manual check, GitHub catalog, self-update)
- * stays off while this is false, and the About UI reports updates as
- * unavailable instead of promising one. Flip it to `true` in the same
- * change that adds the `publish` block to electron-builder.json.
+ * Whether this build has a release feed to consult. The fork publishes
+ * tagged installers to `joaoizidioLoiola/IPTV-Player-NEW` and ships the
+ * matching `publish` block in electron-builder.json, so every network update
+ * path (startup check, manual check, GitHub catalog, self-update) is live.
+ * To return to the feed-less state, set this back to `false` AND remove the
+ * `publish` block from electron-builder.json in the same change: the flag
+ * alone would leave electron-updater pointing at a repository nothing
+ * publishes to, and the `publish` block alone would ship a feed the app
+ * refuses to consult.
  */
-export const APP_UPDATE_FEED_CONFIGURED = false;
+export const APP_UPDATE_FEED_CONFIGURED = true;
 
 /**
  * Prerelease identifier every nightly version carries
@@ -55,8 +58,12 @@ interface AppUpdateRepository {
 }
 
 const APP_UPDATE_REPOSITORIES: Record<AppUpdateChannel, AppUpdateRepository> = {
-    stable: { owner: '4gray', repo: 'iptvnator' },
-    nightly: { owner: '4gray', repo: 'iptvnator-nightly' },
+    stable: { owner: 'joaoizidioLoiola', repo: 'IPTV-Player-NEW' },
+    // Same repository as stable: the channel is only different because the
+    // release carries the `nightly` prerelease identifier (matched by the
+    // catalog filter and electron-updater's channel name), not a separate
+    // repository. Keep the shape until the channel is actually removed.
+    nightly: { owner: 'joaoizidioLoiola', repo: 'IPTV-Player-NEW' },
 };
 
 export function appUpdateRepository(

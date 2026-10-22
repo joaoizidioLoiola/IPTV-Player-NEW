@@ -176,14 +176,13 @@ export default class Main {
             .then(() => deferred.trigger())
             .catch(() => undefined);
         await loadingMainWindow;
-        const { module } = await deferred.trigger();
+        const { module, result } = await deferred.trigger();
 
-        // No startup update check: this fork has no release feed yet
-        // (no electron-builder `publish` endpoint), so nothing may consult
-        // upstream release endpoints. Reintroduce
-        // `result.appUpdateService.checkForUpdatesOnStartup()` here once a
-        // release destination is chosen and APP_UPDATE_FEED_CONFIGURED turns
-        // true (see libs/shared/interfaces app-update-channel.util.ts).
+        // Fire-and-forget: the service refuses to touch the network while the
+        // build is unpackaged or has no release feed (APP_UPDATE_FEED_CONFIGURED),
+        // so an unawaited rejection only surfaces through the updater's own
+        // 'error' event and the About status, never as a startup crash.
+        void result.appUpdateService.checkForUpdatesOnStartup();
 
         await module.finishStartupAfterFirstLoad();
 

@@ -3,10 +3,10 @@ name: CI
 on:
     push:
         branches:
-            - master
+            - main
     pull_request:
         branches:
-            - master
+            - main
     workflow_dispatch:
 
 # Superseded PR pushes cancel their still-running checks. Non-PR runs get a
@@ -298,7 +298,7 @@ jobs:
         # The electron-performance build is the bulk of the time; each journey
         # (launch, open-source, playback, search) is six fresh Electron
         # processes plus one seeding run. The large-library launch journey
-        # (launch-large) is left to the weekly performance-ratchet.yml.
+        # (launch-large) is not gated by CI baselines.
         timeout-minutes: 30
         # Warn-only for the first two weeks of plan item B3: a failure is
         # visible on the run but does not fail the workflow.
@@ -572,15 +572,3 @@ jobs:
                   path: |
                       coverage/merged/
                   retention-days: 14
-
-            - name: Upload unit coverage to Codecov
-              if: always() && steps.scope.outputs.run == 'true'
-              uses: codecov/codecov-action@v7
-              with:
-                  files: ./coverage/merged/lcov.info,./coverage/merged/cobertura-coverage.xml
-                  flags: unit
-                  name: iptvnator-unit
-                  fail_ci_if_error: false
-                  handle_no_reports_found: true
-                  disable_search: true
-                  token: ${{ secrets.CODECOV_TOKEN }}

@@ -16,14 +16,14 @@ const buildAndMakeWorkflow = fs.readFileSync(
     join(currentDir, '..', '..', '.github', 'workflows', 'build-and-make.yaml'),
     'utf8'
 );
-const windowsRuntimeRefreshWorkflow = fs.readFileSync(
+const windowsReleaseWorkflow = fs.readFileSync(
     join(
         currentDir,
         '..',
         '..',
         '.github',
         'workflows',
-        'refresh-windows-embedded-mpv-runtime.yaml'
+        'windows-release.yaml'
     ),
     'utf8'
 );
@@ -150,97 +150,93 @@ function writeWindowsHelperFixture(helperPath, importedDllName) {
     fs.writeFileSync(helperPath, image);
 }
 
-test('Linux package identity does not expose the internal Electron backend project name', () => {
-    assert.equal(electronBuilderConfig.productName, 'IPTVnator');
-    assert.equal(electronBuilderConfig.extraMetadata?.name, 'iptvnator');
-    assert.equal(electronBuilderConfig.extraMetadata?.productName, 'IPTVnator');
-    assert.equal(electronBuilderConfig.linux?.executableName, 'iptvnator');
-    assert.equal(electronBuilderConfig.extraMetadata?.desktopName, 'iptvnator');
-    assert.ok(
-        electronBuilderConfig.linux?.executableArgs?.includes(
-            '--ozone-platform=x11'
-        )
+test('Windows release package keeps the fork identity and a single publishing target', () => {
+    assert.equal(electronBuilderConfig.productName, 'IPTV Player NEW');
+    assert.equal(electronBuilderConfig.extraMetadata?.name, 'iptv-player-new');
+    assert.equal(
+        electronBuilderConfig.extraMetadata?.productName,
+        'IPTV Player NEW'
     );
+    assert.equal(
+        electronBuilderConfig.extraMetadata?.desktopName,
+        'iptv-player-new'
+    );
+
+    // The fork is Windows-only: the upstream mac/linux/snap/flatpak/AppImage
+    // targets publish to the 4gray infrastructure and must not come back by
+    // accident. Reintroducing a platform here also breaks the release-pipeline
+    // asset contract (docs/architecture/windows-release-pipeline.md).
+    assert.equal(electronBuilderConfig.mac, undefined);
+    assert.equal(electronBuilderConfig.linux, undefined);
+    assert.equal(electronBuilderConfig.snap, undefined);
+    assert.equal(electronBuilderConfig.flatpak, undefined);
+    assert.equal(electronBuilderConfig.appImage, undefined);
+    assert.ok(!fs.existsSync(join(
+        currentDir,
+        '..',
+        '..',
+        'apps',
+        'electron-backend',
+        'linux',
+        'com.fourgray.iptvnator.metainfo.xml'
+    )));
+
+    // artifactName must carry the product name: `${name}` resolves to the
+    // packaged `iptv-player-new` identity mirrored from package.json
+    // (asserted above via extraMetadata.name).
+    assert.match(
+        electronBuilderConfig.win?.artifactName ?? '',
+        /^\$\{name\}-\$\{version\}/
+    );
+    assert.deepEqual(electronBuilderConfig.win?.target, [
+        {
+            target: 'nsis',
+            arch: ['x64'],
+        },
+    ]);
 });
 
-test('AppImage desktop metadata supports AppManager without changing other Linux packages', async () => {
-    // Exercise the installed builder: target-specific desktop fields must merge
-    // with Linux defaults, and the builder must keep generating the version.
-    const builderRequire = createRequire(require.resolve('electron-builder'));
-    const { default: AppImageTarget } = builderRequire(
-        'app-builder-lib/out/targets/appimage/AppImageTarget'
-    );
-    const { LinuxTargetHelper } = builderRequire(
-        'app-builder-lib/out/targets/LinuxTargetHelper'
-    );
-    for (const version of [
-        packageMetadata.version,
-        '0.24.1',
-        '0.25.0-beta.1',
-    ]) {
-        const config = structuredClone(electronBuilderConfig);
-        const packager = {
-            config,
-            platformSpecificBuildOptions: config.linux,
-            executableName: config.linux.executableName,
-            fileAssociations: config.fileAssociations,
-            info: { metadata: { ...packageMetadata, ...config.extraMetadata } },
-            appInfo: {
-                productName: config.productName,
-                description: packageMetadata.description,
-                buildVersion: version,
-            },
-        };
-        const helper = new LinuxTargetHelper(packager);
-        const target = new AppImageTarget(
-            'AppImage',
-            packager,
-            helper,
-            os.tmpdir()
-        );
-        const desktop = await target.desktopEntry.value;
-        const fields = Object.fromEntries(
-            desktop
-                .split('\n')
-                .filter((line) => line.includes('='))
-                .map((line) => {
-                    const separator = line.indexOf('=');
-                    return [
-                        line.slice(0, separator),
-                        line.slice(separator + 1),
-                    ];
-                })
-        );
-        assert.equal(fields['X-AppImage-Name'], 'IPTVnator');
-        assert.equal(fields['X-AppImage-Version'], version);
-        assert.equal(
-            fields['X-AppImage-Homepage'],
-            'https://github.com/4gray/iptvnator'
-        );
-        assert.equal(
-            fields['X-AppImage-UpdateURL'],
-            'https://github.com/4gray/iptvnator'
-        );
-        assert.equal(fields.StartupWMClass, 'iptvnator');
-        assert.equal(fields.Exec, 'AppRun --ozone-platform=x11 %U');
-        assert.equal(
-            fields.MimeType,
-            'audio/x-mpegurl;application/vnd.apple.mpegurl;'
-        );
-        // A runner-wide architecture override would mislabel the ARM builds.
-        assert.equal(fields['X-AppImage-Arch'], undefined);
-        const otherDesktop = await helper.computeDesktopEntry(
-            config.linux,
-            'iptvnator %U'
-        );
-        assert.doesNotMatch(otherDesktop, /^X-AppImage-/m);
-        assert.match(otherDesktop, /^StartupWMClass=iptvnator$/m);
-        assert.equal(helper.getDesktopFileName(), 'iptvnator');
-    }
+test('electron-builder publishes to the fork repository and signs every Windows binary', () => {
+    // electron-builder generates latest.yml and the blockmap for this
+    // endpoint, and electron-updater resolves it through the embedded
+    // app-update.yml; credentials come from the CSC_LINK/CSC_KEY_PASSWORD
+    // environment, never from this file.
+    assert.deepEqual(electronBuilderConfig.publish, [
+        {
+            provider: 'github',
+            owner: 'joaoizidioLoiola',
+            repo: 'IPTV-Player-NEW',
+        },
+    ]);
+
+    // sha256-only avoids a sha1 dual signature. electron-builder 26 validates
+    // `signExts` as a WindowsConfiguration key, not inside `signtoolOptions`
+    // (the nested key fails schema validation before packaging starts); it
+    // extends the default signing set to the .dll/.node payload that ships
+    // beside the app.
+    const signtoolOptions = electronBuilderConfig.win?.signtoolOptions;
+    assert.deepEqual(signtoolOptions?.signingHashAlgorithms, ['sha256']);
+    assert.deepEqual(electronBuilderConfig.win?.signExts, ['.dll', '.node']);
+    assert.equal(signtoolOptions?.signExts, undefined);
+    assert.equal(signtoolOptions?.certificateFile, undefined);
+    assert.equal(signtoolOptions?.certificatePassword, undefined);
+    assert.ok(!/CSC/i.test(JSON.stringify(electronBuilderConfig.win)));
+});
+
+test('non-Windows native prebuilds are excluded from the Windows package', () => {
+    // The package ships better-sqlite3 prebuilds for every platform; without
+    // these exclusions a darwin-arm64 .node reaches win-unpacked and signtool
+    // aborts the whole build on a Mach-O file it cannot sign.
+    const files = electronBuilderConfig.files;
+    assert.ok(files.includes('!**/prebuilds/darwin-*.node'));
+    assert.ok(files.includes('!**/prebuilds/linux*.node'));
+    assert.ok(files.includes('!**/prebuilds/android-*.node'));
+    assert.ok(files.includes('!**/prebuilds/freebsd-*.node'));
+    assert.ok(!files.includes('!**/prebuilds/win32-*.node'));
 });
 
 test('playlist file associations are registered with the operating system', () => {
-    // Without these the OS never offers IPTVnator as a handler, so every
+    // Without these the OS never offers the player as a handler, so every
     // runtime path for an OS-supplied playlist is unreachable by double-click.
     assert.deepEqual(electronBuilderConfig.fileAssociations, [
         {
@@ -259,21 +255,36 @@ test('playlist file associations are registered with the operating system', () =
         },
     ]);
 
-    // Electron Builder derives the Linux desktop entry's MimeType from these
-    // `mimeType` fields, and assigns it *after* spreading `linux.desktop.entry`
-    // — so declaring MimeType there instead would be silently overwritten.
-    assert.equal(
-        electronBuilderConfig.linux?.desktop?.entry?.MimeType,
-        undefined
-    );
-
     // Each association needs its own extension: Electron Builder derives the
-    // per-extension NSIS registry entries and the Linux `<glob>` in
-    // /usr/share/mime from `ext`, one mimeType per association.
+    // per-extension NSIS registry entries from `ext`, one mimeType per
+    // association.
     const extensions = electronBuilderConfig.fileAssociations.map(
         (association) => association.ext
     );
     assert.equal(new Set(extensions).size, extensions.length);
+});
+
+test('Windows release workflow packages, signs and uploads the self-update feed', () => {
+    // The fork's release pipeline: trigger, signing credentials, package
+    // verification and the exact updater asset set. Full contract:
+    // docs/architecture/windows-release-pipeline.md.
+    assert.match(windowsReleaseWorkflow, /- 'v\*\.\*\.\*'/);
+    assert.match(windowsReleaseWorkflow, /runs-on: windows-latest/);
+    assert.match(windowsReleaseWorkflow, /CSC_LINK: \$\{\{ secrets\.CSC_LINK \}\}/);
+    assert.match(
+        windowsReleaseWorkflow,
+        /CSC_KEY_PASSWORD: \$\{\{ secrets\.CSC_KEY_PASSWORD \}\}/
+    );
+    assert.match(windowsReleaseWorkflow, /pnpm run make:app -- --publishPolicy=never/);
+    assert.match(windowsReleaseWorkflow, /pnpm run verify:package-layout -- windows x64/);
+    assert.match(windowsReleaseWorkflow, /SIGNTOOL\}" verify \/pa \/all/);
+    assert.match(windowsReleaseWorkflow, /app-update\.yml/);
+    assert.match(windowsReleaseWorkflow, /gh release create/);
+    assert.match(windowsReleaseWorkflow, /--draft/);
+    // The three assets electron-updater consumes on Windows.
+    assert.match(windowsReleaseWorkflow, /-setup\.exe/);
+    assert.match(windowsReleaseWorkflow, /-setup\.exe\.blockmap/);
+    assert.match(windowsReleaseWorkflow, /latest\.yml/);
 });
 
 test('GitHub Releases auto-update metadata is generated and uploaded', () => {
@@ -288,43 +299,13 @@ test('GitHub Releases auto-update metadata is generated and uploaded', () => {
         packageMetadata.dependencies?.['electron-updater'],
         'electron-updater must be a runtime dependency because the packaged app imports it'
     );
-    assert.deepEqual(electronBuilderConfig.publish, [
-        {
-            provider: 'github',
-            owner: '4gray',
-            repo: 'iptvnator',
-        },
-    ]);
-    assert.deepEqual(electronBuilderConfig.mac?.target, [
-        {
-            target: 'dmg',
-            arch: ['x64', 'arm64'],
-        },
-        {
-            target: 'zip',
-            arch: ['x64', 'arm64'],
-        },
-    ]);
+    assert.ok(packageMetadata.homepage, 'root package.json must define a homepage');
     assert.match(buildAndMakeWorkflow, /dist\/executables\/\*\*\/latest\.yml/);
     assert.match(
         buildAndMakeWorkflow,
         /dist\/executables\/\*\*\/latest-mac\.yml/
     );
-    assert.match(
-        buildAndMakeWorkflow,
-        /dist\/executables\/\*\*\/latest-linux\*\.yml/
-    );
     assert.match(buildAndMakeWorkflow, /dist\/executables\/\*\*\/\*\.blockmap/);
-    assert.match(buildAndMakeWorkflow, /Merge macOS updater metadata/);
-    assert.match(buildAndMakeWorkflow, /artifacts\/latest-mac\.yml/);
-    assert.doesNotMatch(
-        releaseFiles,
-        /artifacts\/macos-(?:x64|arm64)-artifacts\/latest-mac\.yml/
-    );
-    assert.match(
-        buildAndMakeWorkflow,
-        /artifacts\/linux-portable-artifacts\/latest-linux\*\.yml/
-    );
     assert.match(
         buildAndMakeWorkflow,
         /artifacts\/windows-artifacts\/latest\.yml/
@@ -1010,33 +991,12 @@ test('Windows CI packages embedded MPV from a staged x64 runtime', () => {
         /checksum and archive layout, not the complete transitive license closure/
     );
     assert.match(
-        windowsRuntimeRefreshWorkflow,
-        /node tools\/embedded-mpv\/update-windows-runtime-pin\.mjs/
+        windowsReleaseWorkflow,
+        /node tools\/embedded-mpv\/windows-runtime-pin\.mjs --github-output/
     );
     assert.match(
-        windowsRuntimeRefreshWorkflow,
-        /node --test\s+tools\/embedded-mpv\/windows-runtime-pin\.test\.mjs/
-    );
-    assert.doesNotMatch(
-        windowsRuntimeRefreshWorkflow,
-        /electron-package-identity\.test\.mjs/
-    );
-    assert.match(
-        windowsRuntimeRefreshWorkflow,
-        /automation\/windows-embedded-mpv-runtime-pin/
-    );
-    assert.match(windowsRuntimeRefreshWorkflow, /secrets\.PAT/);
-    assert.match(
-        windowsRuntimeRefreshWorkflow,
-        /actions\/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1/
-    );
-    assert.match(
-        windowsRuntimeRefreshWorkflow,
-        /actions\/setup-node@820762786026740c76f36085b0efc47a31fe5020/
-    );
-    assert.doesNotMatch(
-        windowsRuntimeRefreshWorkflow,
-        /actions\/(?:checkout|setup-node)@v\d+/
+        windowsReleaseWorkflow,
+        /pnpm embedded-mpv:stage-runtime:windows-archive -- "\$\{WINDOWS_RUNTIME_URL\}" "\$\{WINDOWS_RUNTIME_SHA256\}"/
     );
     assert.match(
         buildAndMakeWorkflow,

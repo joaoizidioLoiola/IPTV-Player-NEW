@@ -1,6 +1,7 @@
 {
     "name": "iptv-player-new",
     "version": "0.25.0",
+    "homepage": "https://github.com/joaoizidioLoiola/IPTV-Player-NEW",
     "engines": {
         "node": "^22.22.3 || ^24.15.0"
     },

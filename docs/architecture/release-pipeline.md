@@ -3,6 +3,13 @@
 How a release is assembled, from the note an author writes during an ordinary
 PR to the draft GitHub release a human publishes.
 
+This fork releases Windows only and publishes to its own repository; the
+Windows-specific contract (own publish endpoint, signing, the tag workflow
+and the self-update channel) lives in
+[windows-release-pipeline.md](windows-release-pipeline.md). The sections
+below describe the release-note pipeline (identical in this fork) and the
+upstream matrix machinery this fork inherited but no longer runs.
+
 The agent-facing entry points are the `release-notes` skill (writing notes) and
 the `release-cut` skill (running a release). This document is the contract they
 reference: the asset set, the ordering constraints, and the reasons behind
@@ -198,6 +205,11 @@ pipeline is built to prevent.
 
 ## Draft verification
 
+> **Fork status:** the upstream tag build (this section and the asset set)
+> is replaced by `windows-release.yaml`, which creates the draft directly
+> (see [windows-release-pipeline.md](windows-release-pipeline.md)); the
+> draft-verification workflow below still applies to that draft when it runs.
+
 The `v*` tag build creates a **draft** GitHub release.
 `pnpm run release:verify:draft` (`tools/release/verify-draft-release.mjs`) is
 the gate that runs before a human publishes it. It is strictly read-only: it
@@ -256,6 +268,12 @@ until the rules catch up.
 
 ## AppImage external-manager metadata
 
+> **Fork status:** the mac/linux/snap/flatpak/AppImage package targets and
+> this metadata were removed from `electron-builder.json`; this fork
+> publishes Windows only (see
+> [windows-release-pipeline.md](windows-release-pipeline.md)). The section
+> below remains as upstream reference.
+
 `electron-builder.json` scopes `X-AppImage-Name`, `X-AppImage-Homepage` and
 `X-AppImage-UpdateURL` to `appImage.desktop.entry`. The source URL is the
 canonical GitHub repository. AppManager 3.8.0 reads these URL fields and can
@@ -287,6 +305,9 @@ References: [AppImage desktop keys](https://docs.appimage.org/reference/desktop-
 
 ## Rolling test drafts
 
+> **Fork status:** dispatch-only legacy; the fork's tag pipeline never
+> creates `test-pr-<n>` drafts.
+
 Every non-fork PR build publishes its artifacts to a rolling **draft** release
 tagged `test-pr-<n>`; a non-PR, non-tag build (a dispatch on a branch) uses
 `test-<branch>`, the shape master pushes used before the nightly channel took
@@ -304,6 +325,14 @@ deletes the draft only when the PR is closed; anything else — an open PR, a
 lookup failure, a `test-<branch>` draft — is left alone.
 
 ## Nightly channel
+
+> **Fork status:** inherited upstream machinery; the `nightly-version` job
+> and its `4gray/iptvnator` gates never fire here (the matrix is
+> dispatch-only), and the fork's `nightly` update channel points at the
+> fork's own repository but has nothing to offer until that decision is
+> made (see [windows-release-pipeline.md](windows-release-pipeline.md)).
+> The channel-switching contract below describes the desktop behavior this
+> fork keeps.
 
 Every push to `master` of `4gray/iptvnator` is also a nightly. The same
 `build-and-make.yaml` run that builds the matrix publishes its artifacts as a
@@ -435,6 +464,9 @@ is de facto shipped — a migration on master can only be followed by another
 migration, never reworked.
 
 ## After verification
+
+> **Fork status:** the Snap, website and blog steps below are upstream
+> infrastructure this fork does not run.
 
 Publishing the GitHub release is manual. That publication automatically
 verifies its Snap assets and uploads them to `edge`; installed-Snap smoke and

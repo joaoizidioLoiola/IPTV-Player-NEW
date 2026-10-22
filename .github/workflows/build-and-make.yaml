@@ -1,5 +1,14 @@
 name: Build and Make Electron App
 
+# Upstream legacy matrix, disabled in this fork. The fork packages and
+# releases Windows only (see .github/workflows/windows-release.yaml and
+# docs/architecture/windows-release-pipeline.md), and the mac/linux/snap/
+# flatpak/AppImage targets were removed from electron-builder.json — running
+# this matrix's macOS or Linux jobs against this tree is expected to fail.
+# The file stays as the reference for the upstream release machinery and for
+# the nightly-version / draft-release patterns the Windows release workflow
+# follows. Manual dispatches are still possible for the Windows job.
+#
 # Docs-only changes never affect the packaged app, so they skip the build
 # matrix. apps/website/** is intentionally NOT ignored: the Linux build job
 # builds the website to verify AppStream screenshot assets. Tag pushes are
@@ -13,35 +22,7 @@ name: Build and Make Electron App
 # cleanup-pr-draft.yml deletes the draft when the PR closes, so the stale
 # window is visible and bounded; refreshing drafts on skipped runs is not
 # worth a separate workflow.
-#
-# Master pushes are the nightly channel: the nightly-version job computes
-# one <patch>-nightly.<date>.<run number> version for the whole run
-# (tools/release/nightly-version.mjs), every build job writes it into
-# package.json so electron-updater treats the build as newer than the
-# released version, and the release job publishes the artifacts as a
-# prerelease of 4gray/iptvnator-nightly instead of the rolling test-master
-# draft. Contract: docs/architecture/release-pipeline.md ("Nightly channel").
 on:
-    push:
-        branches:
-            - master
-        tags:
-            - 'v*.*.*'
-        paths-ignore:
-            - '**/*.md'
-            - 'docs/**'
-            - '.plans/**'
-            - '.codex/**'
-            - '.claude/**'
-    pull_request:
-        branches:
-            - master
-        paths-ignore:
-            - '**/*.md'
-            - 'docs/**'
-            - '.plans/**'
-            - '.codex/**'
-            - '.claude/**'
     workflow_dispatch:
 
 # Build jobs only read the repo; the create-release job raises itself to

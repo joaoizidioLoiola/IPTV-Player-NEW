@@ -5,13 +5,14 @@ import { catchError, map, Observable } from 'rxjs';
 import { STORE_KEY, Theme } from '@iptvnator/shared/interfaces';
 
 /**
- * Legacy upstream releases feed for the browser/PWA update check. Only the
- * self-hosted PWA path calls it (`SettingsAppUpdateFacade.checkAppVersion`
- * returns early on Electron); it says nothing about this fork's own
- * versions and stays until a fork-owned release feed exists.
+ * Releases feed of this fork's repository for the browser/PWA update check.
+ * Only the self-hosted PWA path calls it (`SettingsAppUpdateFacade
+ * .checkAppVersion` returns early on Electron, whose desktop channel is
+ * described in docs/architecture/windows-release-pipeline.md); a page with
+ * no release published yet answers 404 and the check surfaces a warning.
  */
-const LEGACY_UPSTREAM_RELEASES_API_URL =
-    'https://api.github.com/repos/4gray/iptvnator/releases';
+const RELEASES_API_URL =
+    'https://api.github.com/repos/joaoizidioLoiola/IPTV-Player-NEW/releases';
 
 const PRERELEASE_KEYWORDS = [
     'beta',
@@ -188,7 +189,7 @@ export class SettingsService {
     getAppVersion() {
         return this.http
             .get<{ created_at: string; name: string }[]>(
-                LEGACY_UPSTREAM_RELEASES_API_URL
+                RELEASES_API_URL
             )
             .pipe(
                 map((response) => {
