@@ -22,7 +22,11 @@ import {
     type PlaybackRecommendationTarget,
 } from '@iptvnator/playback/util';
 import { PORTAL_EXTERNAL_PLAYBACK } from '@iptvnator/portal/shared/util';
-import { RuntimeCapabilitiesService, SettingsStore } from '@iptvnator/services';
+import {
+    NativePlayerService,
+    RuntimeCapabilitiesService,
+    SettingsStore,
+} from '@iptvnator/services';
 import { PlaybackHistoryGate } from '@iptvnator/playback/data-access';
 import {
     VideoPlayer,
@@ -64,6 +68,7 @@ import { resolveWebPlayerMediaTitle } from './web-player-playback-state';
 import { createChannelPanelAvailability } from './web-player-channel-panel-state';
 import { WebPlayerLiveAutoFormat } from './web-player-live-auto-format';
 import { WebPlayerRecoveryController } from './web-player-recovery-controller';
+import { WebPlayerNativeFallbackCoordinator } from './web-player-native-fallback-coordinator';
 import {
     isPlaybackExternallyTransferable,
     resolveRenderableWebPlayer,
@@ -117,6 +122,7 @@ export class WebPlayerViewComponent implements OnDestroy {
     );
     private readonly runtime = inject(RuntimeCapabilitiesService);
     private readonly settingsStore = inject(SettingsStore);
+    private readonly nativePlayer = inject(NativePlayerService);
     private readonly externalPlayback = inject(PORTAL_EXTERNAL_PLAYBACK, {
         optional: true,
     });
@@ -310,6 +316,17 @@ export class WebPlayerViewComponent implements OnDestroy {
         ];
     });
 
+    private readonly nativeFallback = new WebPlayerNativeFallbackCoordinator({
+        diagnostic: this.visiblePlaybackDiagnostic,
+        token: this.playbackApplicationToken,
+        nativePlayer: this.nativePlayer,
+        playback: this.resolvedPlayback,
+        streamUrl: this.streamUrl,
+        title: this.title,
+        isLive: this.resolvedIsLive,
+        effectiveStartTime: this.effectiveStartTime,
+    });
+
     constructor() {
         effect(() => {
             const session = this.externalPlayback?.activeSession() ?? null;
@@ -355,6 +372,7 @@ export class WebPlayerViewComponent implements OnDestroy {
                 }
             );
         });
+        this.nativeFallback.attach();
     }
 
     ngOnDestroy(): void {

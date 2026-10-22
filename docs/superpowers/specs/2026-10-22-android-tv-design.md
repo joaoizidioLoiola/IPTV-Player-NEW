@@ -198,6 +198,11 @@ media controls.
 - **System Back** finishes `PlayerActivity` inside the app's task and reveals
   the app; an open track dialog consumes the first Back. The activity is
   started from the current `Activity`, never as a standalone task.
+- **Web→native fallback**: a `PlaybackDiagnostic` the WebView cannot fix
+  (`unknown-playback-error`, `unsupported-container`, `media-decode-error`)
+  is handed to the native player once per playback session, with the portal
+  headers and the saved start position. Network failures stay in the web
+  player's own recovery.
 - The Angular side routes Xtream and Stalker live channels to
   `NativePlayerService` when `RuntimeCapabilitiesService.supportsNativePlayer`
   is true (the shell registered the `NativePlayer` plugin). VOD and catch-up
