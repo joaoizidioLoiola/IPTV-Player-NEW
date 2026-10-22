@@ -164,11 +164,18 @@ describe('PlayerControlsComponent settings panel', () => {
     describe('wide dock', () => {
         beforeEach(withEverything);
 
-        it('shows subtitle and speed chips with their values and state colors', () => {
+        it('shows audio, subtitle and speed chips with their values and state colors', () => {
+            const audio = query(
+                '[data-test-id="player-controls-audio-chip"]'
+            );
             const subtitles = query(
                 '[data-test-id="player-controls-subtitle-chip"]'
             );
             const speed = query('[data-test-id="player-controls-speed-chip"]');
+            expect(audio?.textContent).toContain('English');
+            expect(audio?.classList).not.toContain(
+                'player-controls__chip--modified'
+            );
             expect(subtitles?.textContent).toContain('Off');
             expect(subtitles?.classList).not.toContain(
                 'player-controls__chip--on'
@@ -179,13 +186,23 @@ describe('PlayerControlsComponent settings panel', () => {
             );
 
             setState({
-                audioTracks: fake.state().audioTracks,
+                audioTracks: [
+                    { id: 1, label: 'English', selected: false },
+                    { id: 2, label: 'German', selected: true },
+                ],
                 subtitleTracks: [{ id: 5, label: 'Russian', selected: true }],
                 subtitlesEnabled: true,
                 playbackSpeed: 1.25,
             });
             fixture.detectChanges();
 
+            expect(
+                query('[data-test-id="player-controls-audio-chip"]')
+                    ?.textContent
+            ).toContain('German');
+            expect(
+                query('[data-test-id="player-controls-audio-chip"]')?.classList
+            ).toContain('player-controls__chip--modified');
             expect(
                 query('[data-test-id="player-controls-subtitle-chip"]')
                     ?.textContent
@@ -375,6 +392,12 @@ describe('PlayerControlsComponent settings panel', () => {
             expect(
                 query('[data-test-id="player-controls-speed-chip"]')
             ).toBeNull();
+            expect(
+                query('[data-test-id="player-controls-audio-button"]')
+            ).not.toBeNull();
+            expect(
+                query('[data-test-id="player-controls-subtitle-button"]')
+            ).not.toBeNull();
             expect(
                 query('[data-test-id="player-controls-settings-dots"]')
             ).toBeNull();
