@@ -43,6 +43,7 @@ import StalkerEvents from '../events/stalker.events';
 import XtreamEvents from '../events/xtream.events';
 import { registerStreamProbeHandlers } from '../events/stream-probe';
 import { registerConnectivityGuardHandlers } from '../events/connectivity-guard.events';
+import { registerCredentialStoreHandlers } from '../events/credential-store.events';
 import { traceStartupPhase } from '../services/debug-trace';
 import { AppUpdateService } from '../services/app-update.service';
 import {
@@ -96,6 +97,10 @@ export function bootstrapDeferredEvents(
     registerM3uSourceProbe();
     registerSourceProbeCancellation();
     registerConnectivityGuardHandlers();
+    // Vault handlers must exist before the renderer's first invoke: they
+    // answer with typed envelopes, so a missing handler would surface as a
+    // raw "No handler registered" rejection instead of `success: false`.
+    registerCredentialStoreHandlers();
     DatabaseEvents.bootstrapDatabaseEvents();
     EpgEvents.bootstrapEpgEvents();
     RemoteControlEvents.bootstrapRemoteControlEvents();

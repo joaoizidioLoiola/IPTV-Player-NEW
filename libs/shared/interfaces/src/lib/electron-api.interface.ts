@@ -214,6 +214,47 @@ export interface ElectronBridgeCountResult extends ElectronBridgeResult {
     count: number;
 }
 
+/**
+ * Error codes for the Windows Credential Manager vault envelopes. Mirrors
+ * `CredentialStoreErrorCode` in the electron-backend credential store.
+ */
+export const ELECTRON_BRIDGE_CREDENTIAL_STORE_ERROR_CODES = {
+    /** Empty, oversized, or control-character credential id. */
+    InvalidId: 'invalid-id',
+    /** Native keyring module failed to load. */
+    Unavailable: 'unavailable',
+    /** Vault operation failed; the message names the operation only. */
+    Failure: 'failure',
+} as const;
+
+export type ElectronBridgeCredentialStoreErrorCode =
+    (typeof ELECTRON_BRIDGE_CREDENTIAL_STORE_ERROR_CODES)[keyof typeof ELECTRON_BRIDGE_CREDENTIAL_STORE_ERROR_CODES];
+
+/**
+ * Vault read. `secret` is the stored value when found and `null` when the id
+ * has no entry. Vault failures resolve (never reject) as `success: false`
+ * with a `code` and a sanitized `error` message that never echoes the secret.
+ */
+export interface ElectronBridgeCredentialStoreGetResult extends ElectronBridgeErrorResult {
+    secret?: string | null;
+    code?: ElectronBridgeCredentialStoreErrorCode;
+}
+
+/** Vault write envelope; failures resolve with `code`/`error`. */
+export interface ElectronBridgeCredentialStoreWriteResult extends ElectronBridgeErrorResult {
+    code?: ElectronBridgeCredentialStoreErrorCode;
+}
+
+/** Vault delete: `deleted` is false when no entry existed for the id. */
+export interface ElectronBridgeCredentialStoreDeleteResult extends ElectronBridgeCredentialStoreWriteResult {
+    deleted?: boolean;
+}
+
+/** Availability probe for the native keyring module behind the vault. */
+export interface ElectronBridgeCredentialStoreAvailabilityResult {
+    available: boolean;
+}
+
 export interface ElectronBridgeDialogFilter {
     name: string;
     extensions: string[];
@@ -1469,4 +1510,22 @@ export interface ElectronBridgeApi {
         filePath: string
     ) => Promise<ElectronBridgeErrorResult>;
     onRecordingsUpdate?: (callback: () => void) => () => void;
+    /**
+     * Windows Credential Manager vault for connection secrets. The renderer
+     * holds only opaque ids (`vault:<sha256-hex>` references); a secret value
+     * crosses the bridge once, on `credentialStoreSet`. Failures resolve as
+     * `success: false` envelopes with a `code` ('invalid-id' | 'unavailable'
+     * | 'failure') and a sanitized message that never echoes the secret.
+     */
+    credentialStoreGet: (
+        id: string
+    ) => Promise<ElectronBridgeCredentialStoreGetResult>;
+    credentialStoreSet: (
+        id: string,
+        secret: string
+    ) => Promise<ElectronBridgeCredentialStoreWriteResult>;
+    credentialStoreDelete: (
+        id: string
+    ) => Promise<ElectronBridgeCredentialStoreDeleteResult>;
+    credentialStoreIsAvailable: () => Promise<ElectronBridgeCredentialStoreAvailabilityResult>;
 }

@@ -113,6 +113,14 @@ export const PORTAL_DEBUG_EVENT = 'PORTAL_DEBUG_EVENT';
  */
 export const CONNECTIVITY_GUARD_RESET = 'CONNECTIVITY_GUARD_RESET';
 
+// Windows Credential Manager vault: the renderer addresses connection
+// secrets through opaque ids only (`vault:<sha256-hex>` references); the
+// secret value itself crosses the bridge one-way on CREDENTIAL_STORE:SET.
+export const CREDENTIAL_STORE_GET = 'CREDENTIAL_STORE:GET';
+export const CREDENTIAL_STORE_SET = 'CREDENTIAL_STORE:SET';
+export const CREDENTIAL_STORE_DELETE = 'CREDENTIAL_STORE:DELETE';
+export const CREDENTIAL_STORE_IS_AVAILABLE = 'CREDENTIAL_STORE:IS_AVAILABLE';
+
 // Settings
 export const SETTINGS_UPDATE = 'SETTINGS_UPDATE';
 export const DELETE_ALL_PLAYLISTS = 'DELETE_ALL_PLAYLISTS';

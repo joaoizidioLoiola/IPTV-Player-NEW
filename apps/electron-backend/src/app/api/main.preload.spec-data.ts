@@ -62,6 +62,8 @@ const vodSourcePin = {
     contentId: 42,
     portalType: 'xtream',
 };
+const vaultId = 'vault:0123456789abcdef';
+const vaultSecret = 'sentinel-vault-secret';
 
 export const dbPreloadCases: PreloadInvokeCase[] = [
     {
@@ -517,6 +519,35 @@ export const dbPreloadCases: PreloadInvokeCase[] = [
         args: [vodSourceMatchKeys],
         channel: 'DB_CLEAR_VOD_SOURCE_PIN',
         forwardedArgs: [vodSourceMatchKeys],
+    },
+];
+
+export const credentialStorePreloadCases: PreloadInvokeCase[] = [
+    // The vault channels carry a payload object, not positional args: the
+    // main-process handlers read `id`/`secret` from a single invoke payload.
+    {
+        method: 'credentialStoreGet',
+        args: [vaultId],
+        channel: 'CREDENTIAL_STORE:GET',
+        forwardedArgs: [{ id: vaultId }],
+    },
+    {
+        method: 'credentialStoreSet',
+        args: [vaultId, vaultSecret],
+        channel: 'CREDENTIAL_STORE:SET',
+        forwardedArgs: [{ id: vaultId, secret: vaultSecret }],
+    },
+    {
+        method: 'credentialStoreDelete',
+        args: [vaultId],
+        channel: 'CREDENTIAL_STORE:DELETE',
+        forwardedArgs: [{ id: vaultId }],
+    },
+    {
+        method: 'credentialStoreIsAvailable',
+        args: [],
+        channel: 'CREDENTIAL_STORE:IS_AVAILABLE',
+        forwardedArgs: [],
     },
 ];
 

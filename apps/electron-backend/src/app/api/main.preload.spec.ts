@@ -19,6 +19,7 @@ import type {
     ElectronBridgeApi,
 } from '@iptvnator/shared/interfaces';
 import {
+    credentialStorePreloadCases,
     dbPreloadCases,
     epgPreloadCases,
     operationId,
@@ -182,6 +183,42 @@ describe('main preload DB IPC contract', () => {
             );
         }
     );
+
+    it.each(credentialStorePreloadCases)(
+        '$method invokes $channel with the expected arguments',
+        async ({ method, args, channel, forwardedArgs }) => {
+            const api = getExposedApi();
+
+            await callExposedApiMethod(api, method, args);
+
+            expect(mockIpcRenderer.invoke).toHaveBeenLastCalledWith(
+                channel,
+                ...forwardedArgs
+            );
+        }
+    );
+
+    it('carries the vault secret one-way, only on credentialStoreSet', async () => {
+        const api = getExposedApi();
+        const storedSecret = 'sentinel-vault-secret';
+
+        await api.credentialStoreSet('vault:0123456789abcdef', storedSecret);
+        await api.credentialStoreGet('vault:0123456789abcdef');
+        await api.credentialStoreDelete('vault:0123456789abcdef');
+        await api.credentialStoreIsAvailable();
+
+        const invokePayloads = mockIpcRenderer.invoke.mock.calls.map(
+            ([, payload]) => JSON.stringify(payload ?? null)
+        );
+        const setCalls = invokePayloads.filter((payload) =>
+            payload?.includes(storedSecret)
+        );
+
+        // The secret rides only on the SET payload; GET/DELETE forward the
+        // opaque id alone, and the availability probe carries nothing.
+        expect(setCalls).toHaveLength(1);
+        expect(invokePayloads[0]).toContain(storedSecret);
+    });
 
     it('forwards scoped user-agent override arguments', async () => {
         const api = getExposedApi();

@@ -14,6 +14,10 @@ import {
     APP_UPDATE_STATUS_CHANGED,
     ACKNOWLEDGE_PLAYLIST_OPEN_REQUEST,
     ANNOUNCE_PLAYLIST_OPEN_LISTENER,
+    CREDENTIAL_STORE_DELETE,
+    CREDENTIAL_STORE_GET,
+    CREDENTIAL_STORE_IS_AVAILABLE,
+    CREDENTIAL_STORE_SET,
     OPEN_FILE,
     WINDOW_BACK_REQUESTED,
     WINDOW_GET_ZOOM_LEVEL,
@@ -1037,6 +1041,19 @@ const electronApi: ElectronBridgeApi = {
     dbGetAppState: (key: string) => ipcRenderer.invoke('DB_GET_APP_STATE', key),
     dbSetAppState: (key: string, value: string) =>
         ipcRenderer.invoke('DB_SET_APP_STATE', key, value),
+    // Windows Credential Manager vault for connection secrets. The renderer
+    // addresses entries through opaque ids only; the secret value crosses the
+    // bridge once, on credentialStoreSet. Failures resolve as typed
+    // `success: false` envelopes — the preload never rejects and never
+    // echoes the secret back to the renderer.
+    credentialStoreGet: (id: string) =>
+        ipcRenderer.invoke(CREDENTIAL_STORE_GET, { id }),
+    credentialStoreSet: (id: string, secret: string) =>
+        ipcRenderer.invoke(CREDENTIAL_STORE_SET, { id, secret }),
+    credentialStoreDelete: (id: string) =>
+        ipcRenderer.invoke(CREDENTIAL_STORE_DELETE, { id }),
+    credentialStoreIsAvailable: () =>
+        ipcRenderer.invoke(CREDENTIAL_STORE_IS_AVAILABLE),
     // TMDB metadata cache
     dbGetTmdbMetadata: (
         mediaType: TmdbCacheMediaType,
