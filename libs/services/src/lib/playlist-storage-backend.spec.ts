@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { NativePlaylistStore } from './native-playlist-store';
 import { PlaylistStorageBackend } from './playlist-storage-backend';
 import { RuntimeCapabilitiesService } from './runtime-capabilities.service';
 
@@ -11,12 +12,18 @@ describe('PlaylistStorageBackend', () => {
         TestBed.resetTestingModule();
     });
 
-    function create(supportsSqlite: boolean) {
+    function create(
+        supportsSqlite: boolean,
+        options: { isAndroid?: boolean } = {}
+    ) {
         TestBed.configureTestingModule({
             providers: [
                 {
                     provide: RuntimeCapabilitiesService,
-                    useValue: { supportsSqlite },
+                    useValue: {
+                        supportsSqlite,
+                        isAndroid: options.isAndroid ?? false,
+                    },
                 },
             ],
         });
@@ -45,6 +52,28 @@ describe('PlaylistStorageBackend', () => {
     it('prefers the server store once it is set', () => {
         testWindow.electron = undefined;
         const backend = create(false);
+        const store = { dbGetAppPlaylists: jest.fn() } as never;
+
+        backend.useServerStore(store);
+
+        expect(backend.kind()).toBe('server');
+        expect(backend.documentStore()).toBe(store);
+    });
+
+    it('uses the native SQLite store in the Android shell', () => {
+        testWindow.electron = undefined;
+
+        const backend = create(true, { isAndroid: true });
+        const store = backend.documentStore();
+
+        expect(backend.kind()).toBe('sqlite-native');
+        expect(store).toBeInstanceOf(NativePlaylistStore);
+        // Memoized: every read must reuse one connection.
+        expect(backend.documentStore()).toBe(store);
+    });
+
+    it('keeps the server store ahead of the Android SQLite store', () => {
+        const backend = create(true, { isAndroid: true });
         const store = { dbGetAppPlaylists: jest.fn() } as never;
 
         backend.useServerStore(store);

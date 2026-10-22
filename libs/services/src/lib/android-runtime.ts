@@ -69,9 +69,10 @@ export interface AndroidRuntimeInputs {
 }
 
 /**
- * Phase-1 detection of the Android shell. `isAndroidTv` and `hasDpad` are
- * always `false` here — see `AndroidRuntimeInfo` for why no WebView API
- * answer is trustworthy; the phase 3 native TV bridge plugin owns them.
+ * Phase-1 detection of the Android shell. This stays synchronous, so
+ * `isAndroidTv` and `hasDpad` are `false` here — no WebView API answers them.
+ * `loadNativeAndroidRuntimeInfo()` asks the shell's `NativeRuntime` plugin
+ * asynchronously and folds the authoritative `UiModeManager` answer in.
  */
 export function detectAndroidRuntime(
     inputs: AndroidRuntimeInputs

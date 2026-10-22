@@ -1,5 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import type { ElectronBridgeApi } from '@iptvnator/shared/interfaces';
+import { NativePlaylistStore } from './native-playlist-store';
 import { RuntimeCapabilitiesService } from './runtime-capabilities.service';
 
 /**
@@ -38,13 +39,18 @@ export class PlaylistWriteConflict extends Error {
     }
 }
 
-export type PlaylistStorageKind = 'electron' | 'server' | 'indexeddb';
+export type PlaylistStorageKind =
+    | 'electron'
+    | 'server'
+    | 'indexeddb'
+    | 'sqlite-native';
 
 /** Single place that decides where `PlaylistsService` persists playlists. */
 @Injectable({ providedIn: 'root' })
 export class PlaylistStorageBackend {
     private readonly runtime = inject(RuntimeCapabilitiesService);
     private serverStore: PlaylistDocumentStore | null = null;
+    private nativeStore: PlaylistDocumentStore | null = null;
 
     /** Server mode: set once by the server storage session at startup. */
     useServerStore(store: PlaylistDocumentStore): void {
@@ -55,6 +61,9 @@ export class PlaylistStorageBackend {
         if (this.serverStore) {
             return 'server';
         }
+        if (this.runtime.isAndroid) {
+            return 'sqlite-native';
+        }
         return this.runtime.supportsSqlite ? 'electron' : 'indexeddb';
     }
 
@@ -64,9 +73,19 @@ export class PlaylistStorageBackend {
         if (kind === 'server') {
             return this.serverStore;
         }
+        if (kind === 'sqlite-native') {
+            return this.nativeDocumentStore();
+        }
         if (kind !== 'electron' || typeof window === 'undefined') {
             return null;
         }
         return (window.electron as PlaylistDocumentStore | undefined) ?? null;
+    }
+
+    private nativeDocumentStore(): PlaylistDocumentStore {
+        if (!this.nativeStore) {
+            this.nativeStore = new NativePlaylistStore();
+        }
+        return this.nativeStore;
     }
 }
