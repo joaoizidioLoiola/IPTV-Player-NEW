@@ -1,8 +1,10 @@
 package com.iptvplayernew.desktop;
 
 import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -21,6 +23,15 @@ public class MainActivity extends BridgeActivity {
      * libs/shared/interfaces/src/lib/android-runtime-info.ts.
      */
     static final int MIN_WEBVIEW_CHROMIUM_VERSION = 90;
+
+    /**
+     * The only two WebView provider package names that exist on Android 7/7.1
+     * (`getCurrentWebViewPackage` is API 26+), in Google-image order.
+     */
+    private static final String[] LEGACY_WEBVIEW_PACKAGES = {
+        "com.google.android.webview",
+        "com.android.webview",
+    };
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -54,10 +65,18 @@ public class MainActivity extends BridgeActivity {
         }
     }
 
-    /** Major Chromium version of the installed WebView, or -1 if unknown. */
+    /**
+     * Major Chromium version of the installed WebView, or -1 if unknown.
+     *
+     * `WebView.getCurrentWebViewPackage()` exists only on API 26+, while
+     * minSdk is 24: calling it on Android 7 raises `NoSuchMethodError` (not a
+     * `RuntimeException`) and crashed the app on the API 24 TV emulator
+     * before the version gate could run. Below API 26 the provider is one of
+     * two fixed package names; an OEM provider we cannot name fails open.
+     */
     private int currentWebViewMajorVersion() {
         try {
-            PackageInfo webViewPackage = WebView.getCurrentWebViewPackage();
+            PackageInfo webViewPackage = readWebViewPackage();
             if (webViewPackage == null || webViewPackage.versionName == null) {
                 return -1;
             }
@@ -72,9 +91,25 @@ public class MainActivity extends BridgeActivity {
             }
 
             return Integer.parseInt(version.substring(0, end));
-        } catch (RuntimeException unsupported) {
+        } catch (RuntimeException | NoSuchMethodError unsupported) {
             return -1;
         }
+    }
+
+    /** The installed provider, through the API that exists on this device. */
+    private PackageInfo readWebViewPackage() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            return WebView.getCurrentWebViewPackage();
+        }
+
+        for (String provider : LEGACY_WEBVIEW_PACKAGES) {
+            try {
+                return getPackageManager().getPackageInfo(provider, 0);
+            } catch (PackageManager.NameNotFoundException notInstalled) {
+                // Try the next candidate; both missing means unknown (-1).
+            }
+        }
+        return null;
     }
 
     private void showUnsupportedWebView(int detectedVersion) {
